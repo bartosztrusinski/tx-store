@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button';
 export default function HomePage() {
   return (
     <>
-      <div className='flex items-center gap-1 p-2 bg-white text-black'>
+      <div className='flex gap-1 items-center'>
         <Image src='logo.svg' alt='tx store logo' width={32} height={32} />
-        <p>Store</p>
+        <p className='heading-1'>Store</p>
       </div>
-      <div className='flex-center p-4'>
+      <div className='text-center p-4'>
         <Button>Get Started</Button>
       </div>
     </>
