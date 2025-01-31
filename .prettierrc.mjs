@@ -4,6 +4,7 @@
  */
 const config = {
   singleQuote: true,
+  jsxSingleQuote: true,
   experimentalTernaries: true,
   printWidth: 100,
   plugins: ['prettier-plugin-tailwindcss'],
