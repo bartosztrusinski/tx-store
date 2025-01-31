@@ -1,9 +1,7 @@
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className='flex flex-col min-h-screen'>
-      <main className='flex-1 wrapper'>{children}</main>
+    <div className="flex min-h-screen flex-col">
+      <main className="wrapper flex-1">{children}</main>
     </div>
   );
 }
