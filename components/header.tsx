@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { Menu, Search, ShoppingCart, Sun, User } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -13,11 +14,12 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer';
+import { APP_NAME } from '@/lib/constants';
 
 export default function Header() {
   return (
     <header className='border-b'>
-      <div className='wrapper flex-between gap-4 p-4 sm:p-5'>
+      <div className='wrapper flex-between gap-4'>
         <section className='flex-center gap-2 md:gap-4'>
           <Drawer direction='left'>
             <DrawerTrigger asChild>
@@ -33,7 +35,7 @@ export default function Header() {
                 <DrawerTitle>Categories</DrawerTitle>
                 <DrawerDescription>Select a category</DrawerDescription>
               </DrawerHeader>
-              <div className='mx-2 flex flex-col gap-2 overflow-y-auto'>
+              <div className='flex-center mx-2 flex-col gap-2 overflow-y-auto'>
                 <Button variant='ghost'>Tops</Button>
                 <Button variant='ghost'>Pants</Button>
                 <Button variant='ghost'>Shoes</Button>
@@ -46,20 +48,20 @@ export default function Header() {
               </DrawerFooter>
             </DrawerContent>
           </Drawer>
-          <div className='flex-center shrink-0 gap-1'>
-            <Image src='logo.svg' alt='tx store logo' width={32} height={32} />
+          <Link href='/' className='flex-center shrink-0 gap-1'>
+            <Image src='logo.svg' alt={`${APP_NAME} logo`} width={32} height={32} priority />
             <p className='heading-1 hidden md:block'>Store</p>
-          </div>
+          </Link>
         </section>
-        <section className='self-center'>
-          <form className='flex-start gap-2'>
+        <section>
+          <form className='flex-center gap-2'>
             <Input type='search' placeholder='Search' />
             <Button type='submit'>
               <Search />
             </Button>
           </form>
         </section>
-        <section className='hidden gap-2 sm:flex'>
+        <section className='hidden space-x-2 sm:block'>
           <Button variant='ghost'>
             <Sun />
           </Button>

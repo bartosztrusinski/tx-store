@@ -4,7 +4,7 @@
 
 @layer components {
   .wrapper {
-    @apply w-full max-w-7xl p-5 md:px-10 lg:mx-auto;
+    @apply w-full max-w-7xl p-4 md:px-10 lg:mx-auto;
   }
 
   .flex-start {
