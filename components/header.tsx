@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/drawer';
 import { APP_NAME } from '@/lib/constants';
 
-export default function Header() {
+export function Header() {
   return (
     <header className='border-b'>
       <div className='wrapper flex-between gap-4'>
