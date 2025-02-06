@@ -10,6 +10,7 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
@@ -42,8 +43,9 @@ export function ModeToggle() {
           <span className='sr-only'>Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
+      <DropdownMenuContent className='mx-1'>
         <DropdownMenuLabel>Theme</DropdownMenuLabel>
+        <DropdownMenuSeparator />
         {themes.map((theme) => (
           <DropdownMenuCheckboxItem
             key={theme.mode}
