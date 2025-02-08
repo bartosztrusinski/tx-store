@@ -44,7 +44,7 @@ export function ModeToggle({ showLabel = false }: Props) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant='ghost' size={showLabel ? 'default' : 'icon'}>
+        <Button variant='ghost' size={showLabel ? 'default' : 'icon'} className='flex'>
           {showLabel && themeLabel}
           {isMounted && <ThemeIcon className='h-[1.2rem] w-[1.2rem]' />}
           <span className='sr-only'>Toggle theme</span>

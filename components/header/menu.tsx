@@ -8,7 +8,7 @@ import { ModeToggle } from './mode-toggle';
 export function Menu() {
   return (
     <nav>
-      <ul role='menubar' className='hidden gap-2 sm:flex'>
+      <ul role='menubar' className='hidden items-center gap-2 sm:flex'>
         <li>
           <Button variant='ghost'>
             <ShoppingCart /> Cart

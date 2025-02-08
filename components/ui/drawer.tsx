@@ -56,8 +56,8 @@ const DrawerContent = React.forwardRef<
         <div
           className={cn(
             'fixed rounded-full bg-muted',
-            handleDirection === 'left' && 'inset-y-1/2 left-2 h-32 w-2 -translate-y-1/2',
-            handleDirection === 'right' && 'inset-y-1/2 right-2 h-32 w-2 -translate-y-1/2',
+            handleDirection === 'left' && 'inset-y-1/2 left-2 h-24 w-2 -translate-y-1/2',
+            handleDirection === 'right' && 'inset-y-1/2 right-2 h-24 w-2 -translate-y-1/2',
             handleDirection === 'top' && 'inset-x-0 top-2 mx-auto h-2 w-32',
             handleDirection === 'bottom' && 'inset-x-0 bottom-2 mx-auto h-2 w-32',
           )}
