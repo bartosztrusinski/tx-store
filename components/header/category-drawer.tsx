@@ -18,6 +18,7 @@ export function CategoryDrawer() {
       <DrawerTrigger asChild>
         <Button variant='outline' size='icon'>
           <Menu />
+          <span className='sr-only'>Open categories</span>
         </Button>
       </DrawerTrigger>
       <DrawerContent

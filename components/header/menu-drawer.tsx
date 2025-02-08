@@ -5,6 +5,7 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
+  DrawerDescription,
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
@@ -19,6 +20,7 @@ export function MenuDrawer() {
       <DrawerTrigger asChild>
         <Button variant='ghost' className='px-2'>
           <EllipsisVertical />
+          <span className='sr-only'>Open menu</span>
         </Button>
       </DrawerTrigger>
       <DrawerContent
@@ -28,15 +30,20 @@ export function MenuDrawer() {
       >
         <DrawerHeader>
           <DrawerTitle>Menu</DrawerTitle>
+          <DrawerDescription />
         </DrawerHeader>
-        <div className='flex flex-col gap-3 p-2'>
-          <Button variant='ghost'>
-            <ShoppingCart /> Cart
-          </Button>
-          <Button>
-            <User /> Sign In
-          </Button>
-        </div>
+        <ul role='menubar' className='flex flex-col gap-3 p-2'>
+          <li>
+            <Button variant='ghost' className='w-full'>
+              <ShoppingCart /> Cart
+            </Button>
+          </li>
+          <li>
+            <Button className='w-full'>
+              <User /> Sign In
+            </Button>
+          </li>
+        </ul>
         <DrawerFooter className='space-y-1'>
           <ModeToggle showLabel />
           <DrawerClose asChild>
