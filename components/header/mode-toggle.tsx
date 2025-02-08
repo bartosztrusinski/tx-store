@@ -26,10 +26,16 @@ const themes: Theme[] = [
   { label: 'System', mode: 'system', icon: Monitor },
 ];
 
-export function ModeToggle() {
+type Props = {
+  showLabel?: boolean;
+};
+
+export function ModeToggle({ showLabel = false }: Props) {
   const { theme: currentTheme, setTheme } = useTheme();
   const [isMounted, setIsMounted] = useState(false);
-  const ThemeIcon = themes.find((theme) => theme.mode === currentTheme)?.icon ?? Monitor;
+  const themeConfig = themes.find((theme) => theme.mode === currentTheme);
+  const themeLabel = themeConfig?.label ?? 'Theme';
+  const ThemeIcon = themeConfig?.icon ?? Monitor;
 
   useEffect(() => {
     setIsMounted(true);
@@ -38,7 +44,8 @@ export function ModeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant='ghost' size='icon'>
+        <Button variant='ghost' size={showLabel ? 'default' : 'icon'}>
+          {showLabel && themeLabel}
           {isMounted && <ThemeIcon className='h-[1.2rem] w-[1.2rem]' />}
           <span className='sr-only'>Toggle theme</span>
         </Button>
