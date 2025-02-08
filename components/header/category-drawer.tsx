@@ -16,11 +16,12 @@ export function CategoryDrawer() {
   return (
     <Drawer direction='left'>
       <DrawerTrigger asChild>
-        <Button variant='outline' size='icon' className='shrink-0'>
+        <Button variant='outline' size='icon'>
           <Menu />
         </Button>
       </DrawerTrigger>
       <DrawerContent
+        handleDirection='right'
         className='inset-y-2 left-2 m-0 w-full max-w-80 rounded-lg px-4 after:hidden'
         style={{ '--initial-transform': 'calc(100% + 0.5rem)' } as React.CSSProperties}
       >

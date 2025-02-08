@@ -5,24 +5,26 @@ import { Search, ShoppingCart, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-import { ModeToggle } from '@/components/header/mode-toggle';
-import { CategoryDrawer } from '@/components/header/category-drawer';
-import { APP_NAME } from '@/lib/constants';
+import { ModeToggle } from './mode-toggle';
+import { CategoryDrawer } from './category-drawer';
+import { MenuDrawer } from './menu-drawer';
+
 import logo from '@/public/logo.svg';
+import { APP_NAME } from '@/lib/constants';
 
 export function Header() {
   return (
     <header className='border-b'>
-      <div className='wrapper flex-between gap-4'>
-        <section className='flex-center gap-2 md:gap-4'>
+      <div className='wrapper flex-between gap-3 px-2 sm:gap-4 sm:px-4'>
+        <section className='flex-center shrink-0 gap-3 md:gap-4'>
           <CategoryDrawer />
-          <Link href='/' className='flex-center shrink-0 gap-1'>
+          <Link href='/' className='flex-center gap-1'>
             <Image src={logo} alt={`${APP_NAME} logo`} width={32} height={32} priority />
             <p className='heading-1 hidden md:block'>Store</p>
           </Link>
         </section>
         <section>
-          <form className='flex-center gap-2'>
+          <form className='flex-center gap-1 sm:gap-2'>
             <Input type='search' placeholder='Search' />
             <Button type='submit' size='icon' className='shrink-0'>
               <Search />
@@ -37,6 +39,9 @@ export function Header() {
             <User /> Sign In
           </Button>
           <ModeToggle />
+        </section>
+        <section className='shrink sm:hidden'>
+          <MenuDrawer />
         </section>
       </div>
     </header>
