@@ -31,21 +31,38 @@ const DrawerOverlay = React.forwardRef<
 ));
 DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
 
+type DrawerAdditionalProps = {
+  /** Direction of the visual handle. When `undefined`, handle is not displayed  */
+  handleDirection?: 'left' | 'right' | 'top' | 'bottom';
+};
+
 const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> & DrawerAdditionalProps
+>(({ className, children, handleDirection, ...props }, ref) => (
   <DrawerPortal>
     <DrawerOverlay />
     <DrawerPrimitive.Content
       ref={ref}
       className={cn(
         'fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background',
+        handleDirection === 'top' && 'pt-3',
+        handleDirection === 'bottom' && 'pb-3',
         className,
       )}
       {...props}
     >
-      <div className='fixed right-2 top-1/2 h-32 w-2 -translate-y-1/2 rounded-full bg-muted' />
+      {handleDirection && (
+        <div
+          className={cn(
+            'fixed rounded-full bg-muted',
+            handleDirection === 'left' && 'inset-y-1/2 left-2 h-32 w-2 -translate-y-1/2',
+            handleDirection === 'right' && 'inset-y-1/2 right-2 h-32 w-2 -translate-y-1/2',
+            handleDirection === 'top' && 'inset-x-0 top-2 mx-auto h-2 w-32',
+            handleDirection === 'bottom' && 'inset-x-0 bottom-2 mx-auto h-2 w-32',
+          )}
+        />
+      )}
       {children}
     </DrawerPrimitive.Content>
   </DrawerPortal>
