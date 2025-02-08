@@ -3,8 +3,9 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 import { ThemeProvider } from '@/components/theme-provider';
-import { APP_DESCRIPTION, APP_NAME, SERVER_URL } from '@/lib/constants';
+
 import './globals.css';
+import { APP_DESCRIPTION, APP_NAME, SERVER_URL } from '@/lib/constants';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
