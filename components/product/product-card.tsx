@@ -1,4 +1,6 @@
 import Image from 'next/image';
+import Link from 'next/link';
+import { Star } from 'lucide-react';
 
 import {
   Card,
@@ -10,7 +12,6 @@ import {
 } from '@/components/ui/card';
 
 import { Product } from '@/lib/sample-data';
-import Link from 'next/link';
 
 type Props = {
   product: Product;
@@ -42,7 +43,11 @@ export function ProductCard({ product }: Props) {
         </CardTitle>
       </CardHeader>
       <CardFooter className='flex-between px-3 py-2'>
-        <p className='text-yellow-500'>{product.rating}/5</p>
+        <p className='flex-center gap-1 text-sm font-medium text-muted-foreground sm:text-base'>
+          <Star className='size-4 fill-yellow-500 stroke-none sm:size-5' />
+          {product.rating}
+          <span className='sr-only'>out of 5 stars</span>
+        </p>
         <p className='text-lg font-semibold md:text-xl'>${product.price}</p>
       </CardFooter>
     </Card>
