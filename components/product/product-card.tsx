@@ -42,13 +42,15 @@ export function ProductCard({ product }: Props) {
           </Link>
         </CardTitle>
       </CardHeader>
-      <CardFooter className='flex-between px-3 py-2'>
+      <CardFooter className='flex-between flex-wrap gap-x-2 px-3 py-2'>
         <p className='flex-center gap-1 text-sm font-medium text-muted-foreground sm:text-base'>
           <Star className='size-4 fill-yellow-500 stroke-none sm:size-5' />
           {product.rating}
           <span className='sr-only'>out of 5 stars</span>
         </p>
-        <p className='text-lg font-semibold md:text-xl'>${product.price}</p>
+        {product.stock > 0 ?
+          <p className='text-lg font-semibold md:text-xl'>${product.price}</p>
+        : <p className='text-red-500 lg:text-lg'>Out of stock</p>}
       </CardFooter>
     </Card>
   );
