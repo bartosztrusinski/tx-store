@@ -1,12 +1,12 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import { ProductCard } from './product-card';
 
 import type { Product } from '@/lib/sample-data';
 
 type Props = {
-  title?: ReactNode;
   products: Product[];
+  title?: ReactNode;
   limit?: number;
 };
 
