@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
+import type { Product } from '@prisma/client';
 
 import { ProductCard } from './product-card';
-
-import type { Product } from '@/lib/sample-data';
 
 type Props = {
   products: Product[];

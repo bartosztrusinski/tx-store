@@ -1,20 +1,7 @@
-export type Product = {
-  name: string;
-  slug: string;
-  category: string;
-  description: string;
-  images: string[];
-  price: number;
-  brand: string;
-  rating: number;
-  numReviews: number;
-  stock: number;
-  isFeatured: boolean;
-  banner: string | null;
-};
+import { Prisma, Product } from '@prisma/client';
 
 export const sampleData: {
-  products: Product[];
+  products: Omit<Product, 'id' | 'createdAt'>[];
 } = {
   products: [
     {
@@ -23,9 +10,9 @@ export const sampleData: {
       category: "Men's Dress Shirts",
       description: 'Classic Polo style with modern comfort',
       images: ['/images/sample-products/p1-1.jpg', '/images/sample-products/p1-2.jpg'],
-      price: 59.99,
+      price: new Prisma.Decimal(59.99),
       brand: 'Polo',
-      rating: 4.5,
+      rating: new Prisma.Decimal(4.5),
       numReviews: 10,
       stock: 5,
       isFeatured: true,
@@ -37,9 +24,9 @@ export const sampleData: {
       category: "Men's Dress Shirts",
       description: 'Timeless style and premium comfort',
       images: ['/images/sample-products/p2-1.jpg', '/images/sample-products/p2-2.jpg'],
-      price: 85.9,
+      price: new Prisma.Decimal(85.9),
       brand: 'Brooks Brothers',
-      rating: 4.2,
+      rating: new Prisma.Decimal(4.2),
       numReviews: 8,
       stock: 10,
       isFeatured: true,
@@ -51,9 +38,9 @@ export const sampleData: {
       category: "Men's Dress Shirts",
       description: 'A perfect blend of sophistication and comfort',
       images: ['/images/sample-products/p3-1.jpg', '/images/sample-products/p3-2.jpg'],
-      price: 99.95,
+      price: new Prisma.Decimal(99.95),
       brand: 'Tommy Hilfiger',
-      rating: 4.9,
+      rating: new Prisma.Decimal(4.9),
       numReviews: 3,
       stock: 0,
       isFeatured: false,
@@ -65,9 +52,9 @@ export const sampleData: {
       category: "Men's Dress Shirts",
       description: 'Streamlined design with flexible stretch fabric',
       images: ['/images/sample-products/p4-1.jpg', '/images/sample-products/p4-2.jpg'],
-      price: 39.95,
+      price: new Prisma.Decimal(39.95),
       brand: 'Calvin Klein',
-      rating: 3.6,
+      rating: new Prisma.Decimal(3.6),
       numReviews: 5,
       stock: 10,
       isFeatured: false,
@@ -79,9 +66,9 @@ export const sampleData: {
       category: "Men's Dress Shirts",
       description: 'Iconic Polo design with refined oxford fabric',
       images: ['/images/sample-products/p5-1.jpg', '/images/sample-products/p5-2.jpg'],
-      price: 79.99,
+      price: new Prisma.Decimal(79.99),
       brand: 'Polo',
-      rating: 4.7,
+      rating: new Prisma.Decimal(4.7),
       numReviews: 18,
       stock: 6,
       isFeatured: false,
@@ -93,9 +80,9 @@ export const sampleData: {
       category: "Men's Sweatshirts",
       description: 'Soft, stylish, and perfect for laid-back days',
       images: ['/images/sample-products/p6-1.jpg', '/images/sample-products/p6-2.jpg'],
-      price: 99.99,
+      price: new Prisma.Decimal(99.99),
       brand: 'Polo',
-      rating: 4.6,
+      rating: new Prisma.Decimal(4.6),
       numReviews: 12,
       stock: 8,
       isFeatured: true,

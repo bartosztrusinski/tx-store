@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Star } from 'lucide-react';
+import type { Product } from '@prisma/client';
 
 import {
   Card,
@@ -12,8 +13,6 @@ import {
 } from '@/components/ui/card';
 
 import { ProductPrice } from './product-price';
-
-import type { Product } from '@/lib/sample-data';
 
 type Props = {
   product: Product;
@@ -47,11 +46,11 @@ export function ProductCard({ product }: Props) {
       <CardFooter className='flex-between flex-wrap gap-x-3 px-3 py-2'>
         <p className='flex-center gap-1 text-sm font-medium text-muted-foreground sm:text-base'>
           <Star className='size-4 fill-yellow-500 stroke-none sm:size-5' />
-          {product.rating}
+          {product.rating.toString()}
           <span className='sr-only'>out of 5 stars</span>
         </p>
         {product.stock > 0 ?
-          <ProductPrice price={product.price} />
+          <ProductPrice price={product.price.toNumber()} />
         : <p className='text-destructive lg:text-lg'>Out of stock</p>}
       </CardFooter>
     </Card>
