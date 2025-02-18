@@ -1,9 +1,9 @@
 import { ProductList } from '@/components/product/product-list';
 
-import { sampleData } from '@/lib/sample-data';
+import prisma from '@/lib/prisma';
 
-export default function HomePage() {
-  const { products } = sampleData;
+export default async function HomePage() {
+  const products = await prisma.product.findMany();
   const title = <h1 className='heading-2 mb-4 font-bold'>Newest Arrivals</h1>;
 
   return (
