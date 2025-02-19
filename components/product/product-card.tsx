@@ -50,7 +50,7 @@ export function ProductCard({ product }: Props) {
           <span className='sr-only'>out of 5 stars</span>
         </p>
         {product.stock > 0 ?
-          <ProductPrice price={product.price.toNumber()} />
+          <ProductPrice price={product.price.toNumber()} size='lg' />
         : <p className='text-destructive lg:text-lg'>Out of stock</p>}
       </CardFooter>
     </Card>
