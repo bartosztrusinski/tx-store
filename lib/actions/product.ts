@@ -11,3 +11,9 @@ export async function getLatestProducts(): Promise<Product[]> {
     orderBy: { createdAt: 'desc' },
   });
 }
+
+export async function getProductBySlug(slug: Product['slug']): Promise<Product | null> {
+  return prisma.product.findUnique({
+    where: { slug },
+  });
+}
