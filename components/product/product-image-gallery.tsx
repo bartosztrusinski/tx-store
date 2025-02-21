@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Product } from '@prisma/client';
 
 import {
@@ -23,37 +23,38 @@ type Props = {
 export function ProductImageGallery({ images, alt }: Props) {
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const thumbnailsRef = useRef<HTMLDivElement>(null);
+
+  const thumbContainerRef = useCallback(
+    (thumbsNode: HTMLElement | null) => {
+      if (!thumbsNode || !carouselApi) return;
+
+      const carouselNode = carouselApi.rootNode();
+      const resizeObserver = new ResizeObserver(() => {
+        thumbsNode.style.height = `${carouselNode.getBoundingClientRect().height}px`;
+      });
+
+      resizeObserver.observe(carouselNode);
+      return () => resizeObserver.disconnect();
+    },
+    [carouselApi],
+  );
 
   useEffect(() => {
     if (!carouselApi) return;
-
-    const controller = new AbortController();
 
     setCurrentImageIndex(carouselApi.selectedScrollSnap());
 
     carouselApi.on('select', () => {
       setCurrentImageIndex(carouselApi.selectedScrollSnap());
     });
-
-    window.addEventListener(
-      'resize',
-      () => {
-        if (thumbnailsRef.current) {
-          thumbnailsRef.current.style.height = `${carouselApi.rootNode().clientHeight}px`;
-        }
-      },
-      { signal: controller.signal },
-    );
-
-    return () => {
-      controller.abort();
-    };
   }, [carouselApi]);
 
   return (
     <div className='flex flex-col-reverse gap-4 md:flex-row'>
-      <div ref={thumbnailsRef} className='flex max-h-max shrink-0 gap-2 overflow-auto md:flex-col'>
+      <div
+        ref={thumbContainerRef}
+        className='flex max-h-max shrink-0 gap-2 overflow-auto md:flex-col'
+      >
         {images.map((image, index) => (
           <button
             key={index}
