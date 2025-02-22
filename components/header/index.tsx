@@ -12,7 +12,7 @@ import { APP_NAME } from '@/lib/constants';
 
 export function Header() {
   return (
-    <header className='border-b'>
+    <header className='sticky top-0 z-50 border-b border-transparent bg-background shadow dark:border-border'>
       <div className='wrapper flex-between gap-3 px-2 sm:gap-4 sm:px-4'>
         <section className='flex-center shrink-0 gap-3 md:gap-6'>
           <CategoryDrawer />
