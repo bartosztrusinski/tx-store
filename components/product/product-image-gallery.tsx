@@ -20,6 +20,7 @@ type Props = {
   alt: string;
 };
 
+// TODO Conditional rendering for mobile and desktop
 export function ProductImageGallery({ images, alt }: Props) {
   const [mainCarouselApi, setMainCarouselApi] = useState<CarouselApi>();
   const [thumbCarouselApi, setThumbCarouselApi] = useState<CarouselApi>();
@@ -68,7 +69,7 @@ export function ProductImageGallery({ images, alt }: Props) {
   return (
     <div className='flex flex-col-reverse gap-4 md:flex-row'>
       <Carousel
-        className='max-h-max shrink-0'
+        className='hidden max-h-max shrink-0 md:block'
         orientation='vertical'
         opts={{
           containScroll: 'keepSnaps',
@@ -105,7 +106,7 @@ export function ProductImageGallery({ images, alt }: Props) {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <div className='flex-center absolute inset-x-0 bottom-2 gap-2'>
+        <div className='flex-center absolute inset-x-0 bottom-2 gap-2 md:hidden'>
           {images.map((_, index) => (
             <button
               key={index}
@@ -117,8 +118,8 @@ export function ProductImageGallery({ images, alt }: Props) {
             />
           ))}
         </div>
-        <CarouselPrevious className='inset-auto bottom-0 right-14' />
-        <CarouselNext className='inset-auto bottom-0 right-4' />
+        <CarouselPrevious className='inset-auto bottom-0 right-14 hidden md:inline-flex' />
+        <CarouselNext className='inset-auto bottom-0 right-4 hidden md:inline-flex' />
       </Carousel>
     </div>
   );

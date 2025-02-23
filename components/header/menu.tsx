@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { MenuDrawer } from './menu-drawer';
 import { ModeToggle } from './mode-toggle';
 
+// TODO Conditional rendering for mobile and desktop
 export function Menu() {
   return (
     <nav>
