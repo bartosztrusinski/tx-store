@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
+import { WheelGesturesPlugin } from 'embla-carousel-wheel-gestures';
 import type { Product } from '@prisma/client';
 
 import {
@@ -21,6 +22,7 @@ type Props = {
 };
 
 // TODO Conditional rendering for mobile and desktop
+// a11y for thumbs
 export function ProductImageGallery({ images, alt }: Props) {
   const [mainCarouselApi, setMainCarouselApi] = useState<CarouselApi>();
   const [thumbCarouselApi, setThumbCarouselApi] = useState<CarouselApi>();
@@ -67,17 +69,18 @@ export function ProductImageGallery({ images, alt }: Props) {
   );
 
   return (
-    <div className='flex flex-col-reverse gap-4 md:flex-row'>
+    <div className='flex items-start gap-4'>
       <Carousel
         className='hidden max-h-max shrink-0 md:block'
         orientation='vertical'
+        setApi={setThumbCarouselApi}
         opts={{
           containScroll: 'keepSnaps',
           dragFree: true,
         }}
-        setApi={setThumbCarouselApi}
+        plugins={[WheelGesturesPlugin()]}
       >
-        <CarouselContent ref={thumbContainerRef} className='-mt-2 mb-2'>
+        <CarouselContent ref={thumbContainerRef} className='-mt-2 mb-2 min-h-80'>
           {images.map((image, index) => (
             <CarouselItem key={index} className='basis-0 pt-2'>
               <button
