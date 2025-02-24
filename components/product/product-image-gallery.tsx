@@ -13,6 +13,7 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from '@/components/ui/carousel';
+import { Button } from '@/components/ui/button';
 
 import { cn } from '@/lib/utils';
 
@@ -22,7 +23,8 @@ type Props = {
 };
 
 // TODO Conditional rendering for mobile and desktop
-// a11y for thumbs
+// TODO Split into smaller components
+// TODO Fullscreen mode for images
 export function ProductImageGallery({ images, alt }: Props) {
   const [mainCarouselApi, setMainCarouselApi] = useState<CarouselApi>();
   const [thumbCarouselApi, setThumbCarouselApi] = useState<CarouselApi>();
@@ -69,9 +71,9 @@ export function ProductImageGallery({ images, alt }: Props) {
   );
 
   return (
-    <div className='flex items-start gap-4'>
+    <div className='flex items-start gap-2.5'>
       <Carousel
-        className='hidden max-h-max shrink-0 md:block'
+        className='hidden shrink-0 md:block'
         orientation='vertical'
         setApi={setThumbCarouselApi}
         opts={{
@@ -80,16 +82,20 @@ export function ProductImageGallery({ images, alt }: Props) {
         }}
         plugins={[WheelGesturesPlugin()]}
       >
-        <CarouselContent ref={thumbContainerRef} className='-mt-2 mb-2 min-h-80'>
+        <CarouselContent ref={thumbContainerRef} className='mx-1 -mt-1.5 mb-1.5 min-h-80'>
           {images.map((image, index) => (
-            <CarouselItem key={index} className='basis-0 pt-2'>
-              <button
+            <CarouselItem key={index} className='basis-0 pt-1.5'>
+              <Button
                 type='button'
+                variant='ghost'
                 onClick={() => onThumbClick(index)}
-                className={cn('rounded', index === currentImageIndex && 'brightness-75 filter')}
+                className={cn(
+                  'size-auto rounded p-0 focus-visible:ring-foreground',
+                  index === currentImageIndex && 'brightness-75 filter',
+                )}
               >
                 <Image src={image} alt={alt} width={60} height={60} className='rounded' />
-              </button>
+              </Button>
             </CarouselItem>
           ))}
         </CarouselContent>
@@ -111,18 +117,19 @@ export function ProductImageGallery({ images, alt }: Props) {
         </CarouselContent>
         <div className='flex-center absolute inset-x-0 bottom-2 gap-2 md:hidden'>
           {images.map((_, index) => (
-            <button
+            <Button
+              type='button'
               key={index}
               onClick={() => onThumbClick(index)}
               className={cn(
-                'size-2 rounded-full bg-white ring-1 ring-black/25',
-                index === currentImageIndex && 'bg-black',
+                'size-2 rounded-full border border-black/25 bg-white px-1.5 py-0 hover:bg-white',
+                index === currentImageIndex && 'border-white/40 bg-black hover:bg-black',
               )}
             />
           ))}
         </div>
-        <CarouselPrevious className='inset-auto bottom-0 right-14 hidden md:inline-flex' />
-        <CarouselNext className='inset-auto bottom-0 right-4 hidden md:inline-flex' />
+        <CarouselPrevious className='inset-auto bottom-0 right-14 hidden ring-offset-foreground/75 focus-visible:ring-background md:inline-flex' />
+        <CarouselNext className='inset-auto bottom-0 right-4 hidden ring-offset-foreground/75 focus-visible:ring-background md:inline-flex' />
       </Carousel>
     </div>
   );
