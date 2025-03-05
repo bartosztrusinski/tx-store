@@ -1,10 +1,9 @@
 import { PrismaClient } from '@prisma/client';
-
 import { sampleData } from '@/lib/sample-data';
 
-main();
+seed();
 
-export async function main() {
+async function seed() {
   const prisma = new PrismaClient();
   const { products } = sampleData;
 
