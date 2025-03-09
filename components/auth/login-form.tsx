@@ -4,6 +4,8 @@ import { useActionState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { SuccessAlert } from '@/components/success-alert';
+import { ErrorAlert } from '@/components/error-alert';
 import { login } from '@/lib/actions/auth';
 
 import { FieldErrors } from './field-errors';
@@ -20,13 +22,13 @@ export function LoginForm() {
       <Input type='password' name='password' placeholder='Password' />
       <FieldErrors errors={state?.errors?.password} />
 
-      {state?.message && (
-        <p className='text-green-500' aria-live='polite'>
-          {state?.message}
-        </p>
-      )}
+      {state?.message &&
+        (state.isSuccess ?
+          <SuccessAlert message={state.message} />
+        : <ErrorAlert message={state.message} />)}
+
       <Button type='submit' disabled={isPending} className='mt-2'>
-        {isPending ? 'Logging In...' : 'Log In'}
+        {isPending ? 'Submitting...' : 'Log In'}
       </Button>
     </form>
   );

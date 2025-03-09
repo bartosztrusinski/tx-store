@@ -4,6 +4,8 @@ import { useActionState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { SuccessAlert } from '@/components/success-alert';
+import { ErrorAlert } from '@/components/error-alert';
 import { register } from '@/lib/actions/auth';
 
 import { FieldErrors } from './field-errors';
@@ -24,13 +26,13 @@ export function RegisterForm() {
       <Input type='password' name='confirmPassword' placeholder='Repeat Password' />
       <FieldErrors errors={state.errors?.confirmPassword} />
 
-      {state.message && (
-        <p className='text-green-500' aria-live='polite'>
-          {state.message}
-        </p>
-      )}
+      {state?.message &&
+        (state.isSuccess ?
+          <SuccessAlert message={state.message} />
+        : <ErrorAlert message={state.message} />)}
+
       <Button type='submit' disabled={isPending} className='mt-2'>
-        {isPending ? 'Signing Up...' : 'Sign Up'}
+        {isPending ? 'Submitting...' : 'Sign Up'}
       </Button>
     </form>
   );
