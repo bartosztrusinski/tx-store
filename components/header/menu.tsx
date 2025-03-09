@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { ShoppingCart, User } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -16,8 +17,10 @@ export function Menu() {
           </Button>
         </li>
         <li>
-          <Button>
-            <User /> Sign In
+          <Button asChild>
+            <Link href='/login'>
+              <User /> Sign In
+            </Link>
           </Button>
         </li>
         <li>
