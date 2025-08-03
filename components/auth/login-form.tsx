@@ -5,13 +5,12 @@ import { login } from '@/lib/actions/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { SuccessAlert } from '@/components/success-alert';
-import { ErrorAlert } from '@/components/error-alert';
+import { Alert } from '@/components/alert';
 import { FieldErrors } from './field-errors';
 
 export function LoginForm() {
-  const id = useId();
   const [state, action, isPending] = useActionState(login, { isSuccess: false });
+  const id = useId();
 
   return (
     <form action={action} className='flex flex-col gap-5'>
@@ -38,10 +37,9 @@ export function LoginForm() {
         <FieldErrors errors={state?.errors?.password} />
       </div>
 
-      {state?.message &&
-        (state.isSuccess ?
-          <SuccessAlert message={state.message} />
-        : <ErrorAlert message={state.message} />)}
+      {state?.message && (
+        <Alert message={state.message} variant={state.isSuccess ? 'success' : 'error'} />
+      )}
 
       <Button type='submit' disabled={isPending} className='mt-2'>
         {isPending ? 'Submitting...' : 'Log In'}

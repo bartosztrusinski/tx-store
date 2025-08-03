@@ -4,10 +4,9 @@ import { useActionState, useId } from 'react';
 import { register } from '@/lib/actions/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { SuccessAlert } from '@/components/success-alert';
-import { ErrorAlert } from '@/components/error-alert';
-import { FieldErrors } from './field-errors';
 import { Label } from '@/components/ui/label';
+import { Alert } from '@/components/alert';
+import { FieldErrors } from './field-errors';
 
 export function RegisterForm() {
   const [state, action, isPending] = useActionState(register, { isSuccess: false });
@@ -54,10 +53,9 @@ export function RegisterForm() {
         <FieldErrors errors={state.errors?.confirmPassword} />
       </div>
 
-      {state?.message &&
-        (state.isSuccess ?
-          <SuccessAlert message={state.message} />
-        : <ErrorAlert message={state.message} />)}
+      {state?.message && (
+        <Alert message={state.message} variant={state.isSuccess ? 'success' : 'error'} />
+      )}
 
       <Button type='submit' disabled={isPending} className='mt-2'>
         {isPending ? 'Submitting...' : 'Sign Up'}
