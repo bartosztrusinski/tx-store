@@ -1,22 +1,15 @@
 'use server';
 
-import bcrypt from 'bcryptjs';
-import { AuthError } from 'next-auth';
-
-import { prisma } from '@/lib/prisma';
-import { signIn } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import { auth } from '@/lib/auth';
 import { LoginSchema, RegisterSchema } from '@/lib/schemas/auth';
 import type { ActionResponse } from '@/lib/types';
 
 export async function login(
-  state: ActionResponse<typeof LoginSchema>,
+  _: ActionResponse<typeof LoginSchema>,
   formData: FormData,
 ): Promise<ActionResponse<typeof LoginSchema>> {
-  const data = {
-    email: formData.get('email'),
-    password: formData.get('password'),
-  };
-
+  const data = Object.fromEntries(formData.entries());
   const validationResult = LoginSchema.safeParse(data);
 
   if (!validationResult.success) {
@@ -30,46 +23,27 @@ export async function login(
   const { email, password } = validationResult.data;
 
   try {
-    await signIn('credentials', {
-      email,
-      password,
-      redirectTo: '/',
+    await auth.api.signInEmail({
+      body: { email, password },
     });
   } catch (error) {
-    if (!(error instanceof AuthError)) {
-      throw error;
-    }
-
-    if (error.type === 'CredentialsSignin') {
-      return {
-        isSuccess: false,
-        message: 'Please enter correct credentials',
-      };
-    }
-
     return {
       isSuccess: false,
-      message: 'An error occurred while logging in. Please try again later.',
+      message:
+        error instanceof Error ?
+          error.message
+        : 'An error occurred while logging in. Please try again later.',
     };
   }
 
-  return {
-    isSuccess: true,
-    message: 'Logged in successfully',
-  };
+  redirect('/');
 }
 
 export async function register(
-  state: ActionResponse<typeof RegisterSchema>,
+  _: ActionResponse<typeof RegisterSchema>,
   formData: FormData,
 ): Promise<ActionResponse<typeof RegisterSchema>> {
-  const data = {
-    name: formData.get('name'),
-    email: formData.get('email'),
-    password: formData.get('password'),
-    confirmPassword: formData.get('confirmPassword'),
-  };
-
+  const data = Object.fromEntries(formData.entries());
   const validationResult = RegisterSchema.safeParse(data);
 
   if (!validationResult.success) {
@@ -82,35 +56,19 @@ export async function register(
 
   const { email, name, password } = validationResult.data;
 
-  const existingUser = await prisma.user.findUnique({
-    where: {
-      email: validationResult.data.email,
-    },
-  });
-
-  if (existingUser) {
+  try {
+    await auth.api.signUpEmail({
+      body: { email, name, password },
+    });
+  } catch (error) {
     return {
       isSuccess: false,
-      errors: {
-        email: ['Email already in use'],
-      },
+      message:
+        error instanceof Error ?
+          error.message
+        : 'An error occurred while creating your account. Please try again later.',
     };
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  await prisma.user.create({
-    data: {
-      email,
-      name,
-      password: hashedPassword,
-    },
-  });
-
-  // TODO Email verification
-
-  return {
-    isSuccess: true,
-    message: 'Account created successfully',
-  };
+  redirect('/');
 }
