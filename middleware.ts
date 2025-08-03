@@ -1,7 +1,25 @@
-import NextAuth from 'next-auth';
-import authConfig from '@/lib/auth.config';
+import { NextResponse, NextRequest } from 'next/server';
+import { getSessionCookie } from 'better-auth/cookies';
 
-export const { auth: middleware } = NextAuth(authConfig);
+const privateRoutes: string[] = [];
+const authRoutes = ['/login', '/register'];
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const sessionCookie = getSessionCookie(request);
+
+  const isPrivateRoute = privateRoutes.some((route) => pathname.startsWith(route));
+  if (!sessionCookie && isPrivateRoute) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
+  if (sessionCookie && isAuthRoute) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [

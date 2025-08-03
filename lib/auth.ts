@@ -1,11 +1,11 @@
-import NextAuth from 'next-auth';
-import { PrismaAdapter } from '@auth/prisma-adapter';
+import { betterAuth } from 'better-auth';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { nextCookies } from 'better-auth/next-js';
+import { prisma } from './prisma';
 
-import { prisma } from '@/lib/prisma';
-import authConfig from '@/lib/auth.config';
-
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
-  session: { strategy: 'jwt' },
-  ...authConfig,
+export const auth = betterAuth({
+  baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
+  database: prismaAdapter(prisma, { provider: 'postgresql' }),
+  plugins: [nextCookies()],
+  emailAndPassword: { enabled: true },
 });
