@@ -1,12 +1,20 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { ArrowLeftCircle } from 'lucide-react';
-
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { LoginForm } from '@/components/auth/login-form';
 import { APP_NAME } from '@/lib/constants';
+import { auth } from '@/lib/auth';
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  if (session) {
+    redirect('/');
+  }
+
   return (
     <Card className='relative basis-full space-y-2'>
       <Link href='/' className='flex-center absolute left-1 top-1 gap-1 p-2 text-sm'>
