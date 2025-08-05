@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { LucideIcon, Monitor, Moon, Sun } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,

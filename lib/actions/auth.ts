@@ -1,11 +1,12 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { auth } from '@/lib/auth';
 import { LoginSchema, RegisterSchema } from '@/lib/schemas/auth';
 import type { ActionResponse } from '@/lib/types';
 
-export async function login(
+export async function logIn(
   _: ActionResponse<typeof LoginSchema>,
   formData: FormData,
 ): Promise<ActionResponse<typeof LoginSchema>> {
@@ -71,4 +72,8 @@ export async function register(
   }
 
   redirect('/');
+}
+
+export async function logOut() {
+  await auth.api.signOut({ headers: await headers() });
 }
