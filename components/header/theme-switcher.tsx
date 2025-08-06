@@ -16,25 +16,23 @@ import {
 type Theme = {
   label: string;
   mode: 'light' | 'dark' | 'system';
-  icon: LucideIcon;
+  Icon: LucideIcon;
 };
 
 const themes: Theme[] = [
-  { label: 'Light', mode: 'light', icon: Sun },
-  { label: 'Dark', mode: 'dark', icon: Moon },
-  { label: 'System', mode: 'system', icon: Monitor },
+  { label: 'Light', mode: 'light', Icon: Sun },
+  { label: 'Dark', mode: 'dark', Icon: Moon },
+  { label: 'System', mode: 'system', Icon: Monitor },
 ];
 
 type Props = {
-  showLabel?: boolean;
+  withText?: boolean;
 };
 
-export function ThemeSwitcher({ showLabel = false }: Props) {
-  const { theme: currentTheme, setTheme } = useTheme();
+export function ThemeSwitcher({ withText = false }: Props) {
   const [isMounted, setIsMounted] = useState(false);
-  const themeConfig = themes.find((theme) => theme.mode === currentTheme);
-  const themeLabel = themeConfig?.label ?? 'Theme';
-  const ThemeIcon = themeConfig?.icon ?? Monitor;
+  const { theme: activeTheme, setTheme } = useTheme();
+  const { Icon, label } = themes.find(({ mode }) => mode === activeTheme) ?? themes[0];
 
   useEffect(() => {
     setIsMounted(true);
@@ -43,23 +41,23 @@ export function ThemeSwitcher({ showLabel = false }: Props) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant='ghost' size={showLabel ? 'default' : 'icon'} className='flex'>
-          {showLabel && themeLabel}
-          {isMounted && <ThemeIcon className='h-[1.2rem] w-[1.2rem]' />}
+        <Button variant='ghost' size={withText ? 'default' : 'icon'} className='flex'>
+          {withText && label}
+          {isMounted && <Icon className='h-[1.2rem] w-[1.2rem]' />}
           <span className='sr-only'>Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className='mx-1'>
         <DropdownMenuLabel>Theme</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {themes.map((theme) => (
+        {themes.map(({ mode, label }) => (
           <DropdownMenuCheckboxItem
-            key={theme.mode}
-            checked={currentTheme === theme.mode}
-            onCheckedChange={() => setTheme(theme.mode)}
+            key={mode}
+            checked={activeTheme === mode}
+            onCheckedChange={() => setTheme(mode)}
             className='cursor-pointer'
           >
-            {theme.label}
+            {label}
           </DropdownMenuCheckboxItem>
         ))}
       </DropdownMenuContent>

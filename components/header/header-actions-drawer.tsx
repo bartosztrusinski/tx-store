@@ -45,7 +45,7 @@ export function HeaderActionsDrawer() {
           </ul>
         </nav>
         <DrawerFooter className='space-y-1'>
-          <ThemeSwitcher showLabel />
+          <ThemeSwitcher withText />
           <DrawerClose asChild>
             <Button variant='outline'>Close</Button>
           </DrawerClose>
