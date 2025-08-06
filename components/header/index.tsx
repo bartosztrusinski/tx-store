@@ -1,14 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
-
+import { APP_NAME } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
 import { CategoryDrawer } from './category-drawer';
-import { Menu } from './menu';
-
-import { APP_NAME } from '@/lib/constants';
+import { HeaderActions } from './header-actions';
 
 export function Header() {
   return (
@@ -36,7 +33,7 @@ export function Header() {
             </Button>
           </form>
         </section>
-        <Menu />
+        <HeaderActions />
       </div>
     </header>
   );

@@ -29,7 +29,7 @@ type Props = {
   showLabel?: boolean;
 };
 
-export function ModeToggle({ showLabel = false }: Props) {
+export function ThemeSwitcher({ showLabel = false }: Props) {
   const { theme: currentTheme, setTheme } = useTheme();
   const [isMounted, setIsMounted] = useState(false);
   const themeConfig = themes.find((theme) => theme.mode === currentTheme);

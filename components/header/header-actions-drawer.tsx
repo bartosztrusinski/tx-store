@@ -1,5 +1,4 @@
 import { EllipsisVertical, ShoppingCart, User } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
 import {
   Drawer,
@@ -11,10 +10,9 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer';
+import { ThemeSwitcher } from './theme-switcher';
 
-import { ModeToggle } from './mode-toggle';
-
-export function MenuDrawer() {
+export function HeaderActionsDrawer() {
   return (
     <Drawer direction='right'>
       <DrawerTrigger asChild>
@@ -32,20 +30,22 @@ export function MenuDrawer() {
           <DrawerTitle>Menu</DrawerTitle>
           <DrawerDescription />
         </DrawerHeader>
-        <ul role='menubar' className='flex flex-col gap-3 p-2'>
-          <li>
-            <Button variant='ghost' className='w-full'>
-              <ShoppingCart /> Cart
-            </Button>
-          </li>
-          <li>
-            <Button className='w-full'>
-              <User /> Sign In
-            </Button>
-          </li>
-        </ul>
+        <nav aria-label='User actions'>
+          <ul role='menubar' className='flex flex-col gap-3 p-2'>
+            <li>
+              <Button variant='ghost' className='w-full'>
+                <ShoppingCart /> Cart
+              </Button>
+            </li>
+            <li>
+              <Button className='w-full'>
+                <User /> Sign In
+              </Button>
+            </li>
+          </ul>
+        </nav>
         <DrawerFooter className='space-y-1'>
-          <ModeToggle showLabel />
+          <ThemeSwitcher showLabel />
           <DrawerClose asChild>
             <Button variant='outline'>Close</Button>
           </DrawerClose>
