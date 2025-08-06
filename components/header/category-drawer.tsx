@@ -1,3 +1,4 @@
+import { type CSSProperties } from 'react';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,8 +23,8 @@ export function CategoryDrawer() {
       </DrawerTrigger>
       <DrawerContent
         handleDirection='right'
-        className='inset-y-2 left-2 m-0 w-full max-w-80 rounded-lg px-4 after:hidden'
-        style={{ '--initial-transform': 'calc(100% + 0.5rem)' } as React.CSSProperties}
+        className='inset-2 m-0 max-w-80 rounded-lg px-4 after:hidden'
+        style={{ '--initial-transform': 'calc(100% + 0.5rem)' } as CSSProperties}
       >
         <DrawerHeader>
           <DrawerTitle>Categories</DrawerTitle>
