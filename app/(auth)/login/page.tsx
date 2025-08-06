@@ -8,11 +8,18 @@ import { LoginForm } from '@/components/auth/login-form';
 import { APP_NAME } from '@/lib/constants';
 import { auth } from '@/lib/auth';
 
-export default async function LoginPage() {
+type Props = {
+  searchParams: Promise<{ callbackUrl?: string }>;
+};
+
+const DEFAULT_CALLBACK_URL = '/';
+
+export default async function LoginPage({ searchParams }: Props) {
   const session = await auth.api.getSession({ headers: await headers() });
+  const { callbackUrl = DEFAULT_CALLBACK_URL } = await searchParams;
 
   if (session) {
-    redirect('/');
+    redirect(callbackUrl);
   }
 
   return (
@@ -31,7 +38,7 @@ export default async function LoginPage() {
         </p>
       </CardHeader>
       <CardContent>
-        <LoginForm />
+        <LoginForm callbackUrl={callbackUrl} />
       </CardContent>
       <CardFooter>
         <p>

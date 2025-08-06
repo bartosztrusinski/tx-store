@@ -8,7 +8,5 @@ declare global {
 export type ActionResponse<T extends ZodType> = {
   isSuccess: boolean;
   message?: string;
-  errors?: {
-    [K in keyof z.infer<T>]?: string[];
-  };
+  errors?: Partial<Record<keyof z.infer<T>, string[]>>;
 };

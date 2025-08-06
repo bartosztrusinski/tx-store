@@ -8,7 +8,11 @@ import { Label } from '@/components/ui/label';
 import { Alert } from '@/components/alert';
 import { FieldErrors } from './field-errors';
 
-export function LoginForm() {
+type Props = {
+  callbackUrl: string;
+};
+
+export function LoginForm({ callbackUrl }: Props) {
   const [state, action, isPending] = useActionState(logIn, { isSuccess: false });
   const id = useId();
 
@@ -36,6 +40,9 @@ export function LoginForm() {
         />
         <FieldErrors errors={state?.errors?.password} />
       </div>
+
+      <input type='hidden' name='callbackUrl' value={callbackUrl} />
+      <FieldErrors errors={state?.errors?.callbackUrl} />
 
       {state?.message && (
         <Alert message={state.message} variant={state.isSuccess ? 'success' : 'error'} />

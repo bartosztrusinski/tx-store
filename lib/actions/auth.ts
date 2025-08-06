@@ -21,12 +21,10 @@ export async function logIn(
     };
   }
 
-  const { email, password } = validationResult.data;
+  const { email, password, callbackUrl } = validationResult.data;
 
   try {
-    await auth.api.signInEmail({
-      body: { email, password },
-    });
+    await auth.api.signInEmail({ body: { email, password } });
   } catch (error) {
     return {
       isSuccess: false,
@@ -37,7 +35,7 @@ export async function logIn(
     };
   }
 
-  redirect('/');
+  redirect(callbackUrl);
 }
 
 export async function register(

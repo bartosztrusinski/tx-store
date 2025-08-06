@@ -7,6 +7,9 @@ const LoginSchema = z.object({
   password: z.string().min(1, {
     message: 'Please enter your password',
   }),
+  callbackUrl: z.string().refine((url) => url.startsWith('/'), {
+    message: 'Invalid callback URL',
+  }),
 });
 
 const RegisterSchema = z
