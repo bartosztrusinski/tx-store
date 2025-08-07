@@ -28,7 +28,7 @@ export default async function LoginPage({ searchParams }: Props) {
         <ArrowLeftCircle className='size-5' />
         Back
       </Link>
-      <CardHeader className='flex-center'>
+      <CardHeader className='flex-center gap-1'>
         <Link href='/' className='p-0.5'>
           <Image src='/images/logo.svg' alt={`${APP_NAME} logo`} width={36} height={36} />
         </Link>
