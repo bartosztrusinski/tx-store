@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const LoginSchema = z.object({
+export const loginSchema = z.object({
   email: z.string().email({
     message: 'Please enter a valid email address',
   }),
@@ -12,7 +12,7 @@ const LoginSchema = z.object({
   }),
 });
 
-const RegisterSchema = z
+export const registerSchema = z
   .object({
     name: z.string().min(3, {
       message: 'Name must be at least 3 characters long',
@@ -38,10 +38,11 @@ const RegisterSchema = z
         message: 'Password must contain at least one special character',
       }),
     confirmPassword: z.string(),
+    callbackUrl: z.string().refine((url) => url.startsWith('/'), {
+      message: 'Invalid callback URL',
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
     path: ['confirmPassword'],
   });
-
-export { LoginSchema, RegisterSchema };

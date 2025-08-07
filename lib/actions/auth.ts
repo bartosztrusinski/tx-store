@@ -3,15 +3,15 @@
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth';
-import { LoginSchema, RegisterSchema } from '@/lib/schemas/auth';
+import { loginSchema, registerSchema } from '@/lib/schemas/auth';
 import type { ActionResponse } from '@/lib/types';
 
 export async function logIn(
-  _: ActionResponse<typeof LoginSchema>,
+  _: ActionResponse<typeof loginSchema>,
   formData: FormData,
-): Promise<ActionResponse<typeof LoginSchema>> {
+): Promise<ActionResponse<typeof loginSchema>> {
   const data = Object.fromEntries(formData.entries());
-  const validationResult = LoginSchema.safeParse(data);
+  const validationResult = loginSchema.safeParse(data);
 
   if (!validationResult.success) {
     return {
@@ -39,11 +39,11 @@ export async function logIn(
 }
 
 export async function register(
-  _: ActionResponse<typeof RegisterSchema>,
+  _: ActionResponse<typeof registerSchema>,
   formData: FormData,
-): Promise<ActionResponse<typeof RegisterSchema>> {
+): Promise<ActionResponse<typeof registerSchema>> {
   const data = Object.fromEntries(formData.entries());
-  const validationResult = RegisterSchema.safeParse(data);
+  const validationResult = registerSchema.safeParse(data);
 
   if (!validationResult.success) {
     return {
@@ -53,7 +53,7 @@ export async function register(
     };
   }
 
-  const { email, name, password } = validationResult.data;
+  const { email, name, password, callbackUrl } = validationResult.data;
 
   try {
     await auth.api.signUpEmail({
@@ -69,7 +69,7 @@ export async function register(
     };
   }
 
-  redirect('/');
+  redirect(callbackUrl);
 }
 
 export async function logOut() {

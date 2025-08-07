@@ -8,11 +8,18 @@ import { RegisterForm } from '@/components/auth/register-form';
 import { APP_NAME } from '@/lib/constants';
 import { auth } from '@/lib/auth';
 
-export default async function RegisterPage() {
+type Props = {
+  searchParams: Promise<{ callbackUrl?: string }>;
+};
+
+const DEFAULT_CALLBACK_URL = '/';
+
+export default async function RegisterPage({ searchParams }: Props) {
   const session = await auth.api.getSession({ headers: await headers() });
+  const { callbackUrl = DEFAULT_CALLBACK_URL } = await searchParams;
 
   if (session) {
-    redirect('/');
+    redirect(callbackUrl);
   }
 
   return (
@@ -31,7 +38,7 @@ export default async function RegisterPage() {
         </p>
       </CardHeader>
       <CardContent>
-        <RegisterForm />
+        <RegisterForm callbackUrl={callbackUrl} />
       </CardContent>
       <CardFooter>
         <p>
