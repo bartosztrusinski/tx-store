@@ -4,20 +4,19 @@ import { Product } from '@prisma/client';
 import { createContext, ReactNode, useContext, useState } from 'react';
 
 type CartItem = {
-  id: Product['id'];
   quantity: number;
 };
 
 type CartContextType = {
-  cartItems: CartItem[];
-  removeItem: (id: CartItem['id']) => void;
-  incrementItemQuantity: (id: CartItem['id']) => void;
-  decrementItemQuantity: (id: CartItem['id']) => void;
-  setItemQuantity: (id: CartItem['id'], quantity: number) => void;
+  cartItems: Map<Product['id'], CartItem>;
+  removeItem: (id: Product['id']) => void;
+  incrementItemQuantity: (id: Product['id']) => void;
+  decrementItemQuantity: (id: Product['id']) => void;
+  setItemQuantity: (id: Product['id'], quantity: number) => void;
 };
 
 const CartContext = createContext<CartContextType>({
-  cartItems: [],
+  cartItems: new Map(),
   removeItem: () => {},
   incrementItemQuantity: () => {},
   decrementItemQuantity: () => {},
@@ -35,42 +34,46 @@ export function useCart() {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartContextType['cartItems']>(new Map());
 
-  const incrementItemQuantity = (id: CartItem['id']) => {
-    const currentQuantity = cartItems.find((item) => item.id === id)?.quantity;
+  const getItemQuantity = (id: Product['id']): CartItem['quantity'] | null => {
+    return cartItems.get(id)?.quantity ?? null;
+  };
 
+  const incrementItemQuantity = (id: Product['id']) => {
+    const currentQuantity = getItemQuantity(id) ?? 0;
+    setCartItems((prevItems) => new Map(prevItems).set(id, { quantity: currentQuantity + 1 }));
+  };
+
+  const decrementItemQuantity = (id: Product['id']) => {
+    const currentQuantity = getItemQuantity(id);
+    const newCartItems = new Map(cartItems);
+
+    if (!currentQuantity) {
+      return;
+    }
+
+    if (currentQuantity > 1) {
+      newCartItems.set(id, { quantity: currentQuantity - 1 });
+    } else {
+      newCartItems.delete(id);
+    }
+
+    setCartItems(newCartItems);
+  };
+
+  const setItemQuantity = (id: Product['id'], quantity: number) => {
     setCartItems((prevItems) =>
-      currentQuantity ?
-        prevItems.map((item) =>
-          item.id === id ? { ...item, quantity: currentQuantity + 1 } : item,
-        )
-      : [...prevItems, { id, quantity: 1 }],
+      new Map(prevItems).set(id, { quantity: Math.max(0, Math.round(quantity)) }),
     );
   };
 
-  const decrementItemQuantity = (id: CartItem['id']) => {
-    const currentQuantity = cartItems.find((item) => item.id === id)?.quantity;
-
-    setCartItems((prevItems) =>
-      currentQuantity === 1 ?
-        prevItems.filter((item) => item.id !== id)
-      : prevItems.map((item) =>
-          item.id === id ? { ...item, quantity: Math.max(item.quantity - 1, 0) } : item,
-        ),
-    );
-  };
-
-  const setItemQuantity = (id: CartItem['id'], quantity: number) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item,
-      ),
-    );
-  };
-
-  const removeItem = (id: CartItem['id']) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+  const removeItem = (id: Product['id']) => {
+    setCartItems((prevItems) => {
+      const updatedItems = new Map(prevItems);
+      updatedItems.delete(id);
+      return updatedItems;
+    });
   };
 
   return (
