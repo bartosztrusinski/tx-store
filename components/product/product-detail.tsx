@@ -1,11 +1,11 @@
 import type { Product } from '@prisma/client';
 
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
 import { ProductPrice } from './product-price';
 import { ProductImageGallery } from './product-image-gallery';
+import { AddToCartControl } from './add-to-cart-control';
 
 type Props = {
   product: Product;
@@ -45,9 +45,7 @@ export function ProductDetail({ product }: Props) {
               {isInStock ? 'In Stock' : 'Out of Stock'}
             </Badge>
           </div>
-          <Button size='lg' className='mt-4 w-full' disabled={product.stock <= 0}>
-            Add to Bag
-          </Button>
+          <AddToCartControl productId={product.id} productStock={product.stock} />
         </Card>
       </section>
     </article>
