@@ -3,7 +3,7 @@
 import { Minus, Plus } from 'lucide-react';
 import { Product } from '@prisma/client';
 import { Button } from '@/components/ui/button';
-import { useCart } from '@/context/cart-context';
+import { useCart } from '../cart-context';
 
 type Props = {
   productId: Product['id'];

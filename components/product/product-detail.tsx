@@ -1,11 +1,9 @@
 import type { Product } from '@prisma/client';
-
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-
+import { AddToCartControl } from '@/features/cart/components/add-to-cart-control';
 import { ProductPrice } from './product-price';
 import { ProductImageGallery } from './product-image-gallery';
-import { AddToCartControl } from './add-to-cart-control';
 
 type Props = {
   product: Product;

@@ -1,7 +1,7 @@
 'use client';
 
-import { Product } from '@prisma/client';
-import { createContext, ReactNode, useContext, useState } from 'react';
+import { type Product } from '@prisma/client';
+import { createContext, type ReactNode, useContext, useState } from 'react';
 
 type CartItem = {
   quantity: number;
