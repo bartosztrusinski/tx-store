@@ -1,29 +1,30 @@
-import Link from 'next/link';
 import { LogOut, User } from 'lucide-react';
-import { logOut } from '@/lib/actions/auth';
+import Link from 'next/link';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
+import { logOut } from '@/lib/actions/auth';
 
 type Props = {
   email: string;
-  name: string;
   image?: string | null;
+  name: string;
 };
 
-export function UserMenu({ email, name, image }: Props) {
+export function UserMenu({ email, image, name }: Props) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
         <Avatar className='transition-transform will-change-transform hover:scale-105'>
-          <AvatarImage src={image ?? undefined} alt={`Avatar of ${name}`} />
+          <AvatarImage alt={`Avatar of ${name}`} src={image ?? undefined} />
           <AvatarFallback>{name[0].toUpperCase()}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
@@ -43,7 +44,7 @@ export function UserMenu({ email, name, image }: Props) {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild className='p-0'>
           <form action={logOut}>
-            <Button variant='ghost' className='h-auto w-full justify-start px-2 py-1.5'>
+            <Button className='h-auto w-full justify-start px-2 py-1.5' variant='ghost'>
               <LogOut />
               Log Out
             </Button>

@@ -1,29 +1,30 @@
-import { type CSSProperties } from 'react';
 import { Menu } from 'lucide-react';
+import { type CSSProperties } from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
-  DrawerTrigger,
+  Drawer,
+  DrawerClose,
   DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
   DrawerDescription,
   DrawerFooter,
-  DrawerClose,
-  Drawer,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
 } from '@/components/ui/drawer';
 
 export function CategoryDrawer() {
   return (
     <Drawer direction='left'>
       <DrawerTrigger asChild>
-        <Button variant='outline' size='icon'>
+        <Button size='icon' variant='outline'>
           <Menu />
           <span className='sr-only'>Open categories</span>
         </Button>
       </DrawerTrigger>
       <DrawerContent
-        handleDirection='right'
         className='inset-2 m-0 max-w-80 rounded-lg px-4 after:hidden'
+        handleDirection='right'
         style={{ '--initial-transform': 'calc(100% + 0.5rem)' } as CSSProperties}
       >
         <DrawerHeader>

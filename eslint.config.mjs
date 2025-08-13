@@ -11,6 +11,7 @@ const eslintConfig = [
   {
     rules: {
       '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
+      'perfectionist/sort-union-types': ['error', { type: 'unsorted' }],
     },
   },
 ];

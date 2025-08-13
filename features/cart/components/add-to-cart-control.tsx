@@ -1,8 +1,10 @@
 'use client';
 
+import { type Product } from '@prisma/client';
 import { Minus, Plus } from 'lucide-react';
-import { Product } from '@prisma/client';
+
 import { Button } from '@/components/ui/button';
+
 import { useCart } from '../cart-context';
 
 type Props = {
@@ -11,16 +13,16 @@ type Props = {
 };
 
 export function AddToCartControl({ productId, productStock }: Props) {
-  const { cartItems, incrementItemQuantity, decrementItemQuantity } = useCart();
+  const { cartItems, decrementItemQuantity, incrementItemQuantity } = useCart();
   const cartItem = cartItems.get(productId);
 
   if (!cartItem?.quantity) {
     return (
       <Button
-        size='lg'
         className='mt-4 w-full'
         disabled={productStock === 0}
         onClick={() => incrementItemQuantity(productId)}
+        size='lg'
       >
         Add to Bag
       </Button>

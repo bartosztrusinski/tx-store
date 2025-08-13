@@ -1,5 +1,5 @@
-import { NextResponse, NextRequest } from 'next/server';
 import { getSessionCookie } from 'better-auth/cookies';
+import { type NextRequest, NextResponse } from 'next/server';
 
 const privateRoutes: string[] = [];
 const authRoutes = ['/login', '/register'];

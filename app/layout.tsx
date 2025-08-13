@@ -1,44 +1,44 @@
+import { type Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
-import type { Metadata } from 'next';
-import type { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 import { ThemeProvider } from '@/components/theme-provider';
-
-import './globals.css';
 import { APP_DESCRIPTION, APP_NAME, SERVER_URL } from '@/lib/constants';
 
+import './globals.css';
+
 const geistSans = Geist({
-  variable: '--font-geist-sans',
   subsets: ['latin'],
+  variable: '--font-geist-sans',
 });
 
 const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
   subsets: ['latin'],
+  variable: '--font-geist-mono',
 });
 
 export const metadata: Metadata = {
-  title: {
-    template: `%s | ${APP_NAME}`,
-    default: APP_NAME,
-  },
   description: APP_DESCRIPTION,
   metadataBase: new URL(SERVER_URL),
+  title: {
+    default: APP_NAME,
+    template: `%s | ${APP_NAME}`,
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html
+      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       lang='en'
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
       <body>
         <ThemeProvider
           attribute='class'
           defaultTheme='system'
-          enableSystem
           disableTransitionOnChange
+          enableSystem
         >
           {children}
         </ThemeProvider>

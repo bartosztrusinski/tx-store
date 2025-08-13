@@ -1,9 +1,11 @@
-import type { Product } from '@prisma/client';
+import { type Product } from '@prisma/client';
+
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { AddToCartControl } from '@/features/cart/components/add-to-cart-control';
-import { ProductPrice } from './product-price';
+
 import { ProductImageGallery } from './product-image-gallery';
+import { ProductPrice } from './product-price';
 
 type Props = {
   product: Product;
@@ -18,8 +20,8 @@ export function ProductDetail({ product }: Props) {
       {hasImages && (
         <section className='basis-full'>
           <ProductImageGallery
-            images={product.images}
             alt={`${product.category} ${product.name}`}
+            images={product.images}
           />
         </section>
       )}

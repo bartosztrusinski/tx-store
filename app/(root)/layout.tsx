@@ -1,5 +1,5 @@
-import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
+import { Header } from '@/components/header';
 import { CartProvider } from '@/features/cart/cart-context';
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

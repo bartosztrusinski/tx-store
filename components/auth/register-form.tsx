@@ -1,11 +1,13 @@
 'use client';
 
 import { useActionState, useId } from 'react';
-import { register } from '@/lib/actions/auth';
+
+import { Alert } from '@/components/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert } from '@/components/alert';
+import { register } from '@/lib/actions/auth';
+
 import { FieldErrors } from './field-errors';
 
 type Props = {
@@ -21,50 +23,50 @@ export function RegisterForm({ callbackUrl }: Props) {
       <div className='flex flex-col gap-1'>
         <Label htmlFor={`${id}-email`}>Email</Label>
         <Input
+          autoComplete='email'
           id={`${id}-email`}
-          type='email'
           name='email'
           placeholder='john@doe.com'
-          autoComplete='email'
+          type='email'
         />
         <FieldErrors errors={state.errors?.email} />
       </div>
       <div className='flex flex-col gap-1'>
         <Label htmlFor={`${id}-name`}>Name</Label>
-        <Input id={`${id}-name`} name='name' placeholder='John Doe' autoComplete='name' />
+        <Input autoComplete='name' id={`${id}-name`} name='name' placeholder='John Doe' />
         <FieldErrors errors={state.errors?.name} />
       </div>
       <div className='flex flex-col gap-1'>
         <Label htmlFor={`${id}-password`}>Password</Label>
         <Input
+          autoComplete='new-password'
           id={`${id}-password`}
-          type='password'
           name='password'
           placeholder='********'
-          autoComplete='new-password'
+          type='password'
         />
         <FieldErrors errors={state.errors?.password} />
       </div>
       <div className='flex flex-col gap-1'>
         <Label htmlFor={`${id}-confirmPassword`}>Repeat Password</Label>
         <Input
+          autoComplete='new-password'
           id={`${id}-confirmPassword`}
-          type='password'
           name='confirmPassword'
           placeholder='********'
-          autoComplete='new-password'
+          type='password'
         />
         <FieldErrors errors={state.errors?.confirmPassword} />
       </div>
 
-      <input type='hidden' name='callbackUrl' value={callbackUrl} />
+      <input name='callbackUrl' type='hidden' value={callbackUrl} />
       <FieldErrors errors={state?.errors?.callbackUrl} />
 
       {state?.message && (
         <Alert message={state.message} variant={state.isSuccess ? 'success' : 'error'} />
       )}
 
-      <Button type='submit' disabled={isPending} className='mt-2'>
+      <Button className='mt-2' disabled={isPending} type='submit'>
         {isPending ? 'Submitting...' : 'Sign Up'}
       </Button>
     </form>

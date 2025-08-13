@@ -1,31 +1,30 @@
 'use client';
 
+import { type Product } from '@prisma/client';
+import { WheelGesturesPlugin } from 'embla-carousel-wheel-gestures';
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
-import { WheelGesturesPlugin } from 'embla-carousel-wheel-gestures';
-import type { Product } from '@prisma/client';
 
+import { Button } from '@/components/ui/button';
 import {
   Carousel,
+  type CarouselApi,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-  type CarouselApi,
 } from '@/components/ui/carousel';
-import { Button } from '@/components/ui/button';
-
 import { cn } from '@/lib/utils';
 
 type Props = {
-  images: Product['images'];
   alt: string;
+  images: Product['images'];
 };
 
 // TODO Conditional rendering for mobile and desktop
 // TODO Split into smaller components
 // TODO Fullscreen mode for images
-export function ProductImageGallery({ images, alt }: Props) {
+export function ProductImageGallery({ alt, images }: Props) {
   const [mainCarouselApi, setMainCarouselApi] = useState<CarouselApi>();
   const [thumbCarouselApi, setThumbCarouselApi] = useState<CarouselApi>();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -74,27 +73,27 @@ export function ProductImageGallery({ images, alt }: Props) {
     <div className='flex items-start gap-2.5'>
       <Carousel
         className='hidden shrink-0 md:block'
-        orientation='vertical'
-        setApi={setThumbCarouselApi}
         opts={{
           containScroll: 'keepSnaps',
           dragFree: true,
         }}
+        orientation='vertical'
         plugins={[WheelGesturesPlugin()]}
+        setApi={setThumbCarouselApi}
       >
-        <CarouselContent ref={thumbContainerRef} className='mx-1 -mt-1.5 mb-1.5 min-h-80'>
+        <CarouselContent className='mx-1 -mt-1.5 mb-1.5 min-h-80' ref={thumbContainerRef}>
           {images.map((image, index) => (
-            <CarouselItem key={index} className='basis-0 pt-1.5'>
+            <CarouselItem className='basis-0 pt-1.5' key={index}>
               <Button
-                type='button'
-                variant='ghost'
-                onClick={() => onThumbClick(index)}
                 className={cn(
                   'size-auto rounded p-0 focus-visible:ring-foreground',
                   index === currentImageIndex && 'brightness-75 filter',
                 )}
+                onClick={() => onThumbClick(index)}
+                type='button'
+                variant='ghost'
               >
-                <Image src={image} alt={alt} width={60} height={60} className='rounded' />
+                <Image alt={alt} className='rounded' height={60} src={image} width={60} />
               </Button>
             </CarouselItem>
           ))}
@@ -106,11 +105,11 @@ export function ProductImageGallery({ images, alt }: Props) {
           {images.map((image, index) => (
             <CarouselItem key={index}>
               <Image
-                src={image}
                 alt={alt}
-                width={640}
-                height={640}
                 className='w-full rounded object-cover object-center'
+                height={640}
+                src={image}
+                width={640}
               />
             </CarouselItem>
           ))}
@@ -118,13 +117,13 @@ export function ProductImageGallery({ images, alt }: Props) {
         <div className='flex-center absolute inset-x-0 bottom-2 gap-2 md:hidden'>
           {images.map((_, index) => (
             <Button
-              type='button'
-              key={index}
-              onClick={() => onThumbClick(index)}
               className={cn(
                 'size-2 rounded-full border border-black/25 bg-white px-1.5 py-0 hover:bg-white',
                 index === currentImageIndex && 'border-white/40 bg-black hover:bg-black',
               )}
+              key={index}
+              onClick={() => onThumbClick(index)}
+              type='button'
             />
           ))}
         </div>

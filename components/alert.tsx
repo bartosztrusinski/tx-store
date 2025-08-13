@@ -1,6 +1,7 @@
-import { type ElementType } from 'react';
 import { AlertCircle, CheckCircle } from 'lucide-react';
-import { Alert as _Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { type ElementType } from 'react';
+
+import { Alert as _Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 type AlertVariant = 'success' | 'error';
 
@@ -10,20 +11,20 @@ type Props = {
 };
 
 const alertVariants = {
-  success: {
-    type: 'success' as const,
-    Icon: CheckCircle,
-    title: 'Success',
-  },
   error: {
-    type: 'destructive' as const,
     Icon: AlertCircle,
     title: 'Error',
+    type: 'destructive' as const,
   },
-} satisfies Record<AlertVariant, { type: string; title: string; Icon: ElementType }>;
+  success: {
+    Icon: CheckCircle,
+    title: 'Success',
+    type: 'success' as const,
+  },
+} satisfies Record<AlertVariant, { Icon: ElementType; title: string; type: string }>;
 
 export function Alert({ message, variant }: Props) {
-  const { type, title, Icon } = alertVariants[variant];
+  const { Icon, title, type } = alertVariants[variant];
 
   return (
     <_Alert variant={type}>

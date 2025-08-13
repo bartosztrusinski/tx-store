@@ -3,35 +3,25 @@
 import { type Product } from '@prisma/client';
 import { createContext, type ReactNode, useContext, useState } from 'react';
 
+type CartContextType = {
+  cartItems: Map<Product['id'], CartItem>;
+  decrementItemQuantity: (id: Product['id']) => void;
+  incrementItemQuantity: (id: Product['id']) => void;
+  removeItem: (id: Product['id']) => void;
+  setItemQuantity: (id: Product['id'], quantity: number) => void;
+};
+
 type CartItem = {
   quantity: number;
 };
 
-type CartContextType = {
-  cartItems: Map<Product['id'], CartItem>;
-  removeItem: (id: Product['id']) => void;
-  incrementItemQuantity: (id: Product['id']) => void;
-  decrementItemQuantity: (id: Product['id']) => void;
-  setItemQuantity: (id: Product['id'], quantity: number) => void;
-};
-
 const CartContext = createContext<CartContextType>({
   cartItems: new Map(),
-  removeItem: () => {},
-  incrementItemQuantity: () => {},
   decrementItemQuantity: () => {},
+  incrementItemQuantity: () => {},
+  removeItem: () => {},
   setItemQuantity: () => {},
 });
-
-export function useCart() {
-  const context = useContext(CartContext);
-
-  if (!context) {
-    throw new Error(`${useCart.name} must be used within ${CartProvider.name}`);
-  }
-
-  return context;
-}
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartContextType['cartItems']>(new Map());
@@ -80,8 +70,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     <CartContext.Provider
       value={{
         cartItems,
-        incrementItemQuantity,
         decrementItemQuantity,
+        incrementItemQuantity,
         removeItem,
         setItemQuantity,
       }}
@@ -89,4 +79,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       {children}
     </CartContext.Provider>
   );
+}
+
+export function useCart() {
+  const context = useContext(CartContext);
+
+  if (!context) {
+    throw new Error(`${useCart.name} must be used within ${CartProvider.name}`);
+  }
+
+  return context;
 }

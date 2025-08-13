@@ -1,8 +1,10 @@
-import Link from 'next/link';
-import { headers } from 'next/headers';
 import { LogIn, ShoppingCart } from 'lucide-react';
-import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
+import Link from 'next/link';
+
 import { Button } from '@/components/ui/button';
+import { auth } from '@/lib/auth';
+
 import { HeaderActionsDrawer } from './header-actions-drawer';
 import { ThemeSwitcher } from './theme-switcher';
 import { UserMenu } from './user-menu';
@@ -14,7 +16,7 @@ export async function HeaderActions() {
   return (
     <>
       <nav aria-label='User actions' className='hidden sm:block'>
-        <ul role='menubar' className='flex items-center gap-2'>
+        <ul className='flex items-center gap-2' role='menubar'>
           <li>
             <ThemeSwitcher />
           </li>

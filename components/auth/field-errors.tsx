@@ -4,7 +4,7 @@ type Props = {
 
 export function FieldErrors({ errors }: Props) {
   return errors?.map((error, index) => (
-    <span key={index} className='text-sm font-light text-destructive' aria-live='polite'>
+    <span aria-live='polite' className='text-sm font-light text-destructive' key={index}>
       {error}
     </span>
   ));

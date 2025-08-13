@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
-import { sampleData } from '@/lib/sample-data';
+
 import { auth } from '@/lib/auth';
+import { sampleData } from '@/lib/sample-data';
 
 seed();
 

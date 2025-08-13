@@ -2,13 +2,13 @@ import { cn } from '@/lib/utils';
 
 type Props = {
   price: number;
-  size?: 'sm' | 'default' | 'lg';
+  size?: 'default' | 'lg' | 'sm';
 };
 
 export function ProductPrice({ price, size = 'default' }: Props) {
   const formattedPrice = new Intl.NumberFormat('en-US', {
-    style: 'currency',
     currency: 'USD',
+    style: 'currency',
   }).formatToParts(price);
 
   return (
@@ -16,13 +16,13 @@ export function ProductPrice({ price, size = 'default' }: Props) {
       {formattedPrice.map(({ type, value }, index) =>
         type === 'integer' ?
           <span
-            key={index}
             className={cn(
               'font-medium',
               size === 'sm' && 'text-base lg:text-lg',
               size === 'default' && 'text-lg lg:text-xl',
               size === 'lg' && 'text-xl lg:text-2xl',
             )}
+            key={index}
           >
             {value}
           </span>

@@ -1,13 +1,14 @@
 'use server';
 
-import { prisma } from '@/lib/prisma';
+import { type Product } from '@prisma/client';
+
 import { LATEST_PRODUCTS_LIMIT } from '@/lib/constants';
-import type { Product } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 
 export async function getLatestProducts(): Promise<Product[]> {
   return prisma.product.findMany({
-    take: LATEST_PRODUCTS_LIMIT,
     orderBy: { createdAt: 'desc' },
+    take: LATEST_PRODUCTS_LIMIT,
   });
 }
 

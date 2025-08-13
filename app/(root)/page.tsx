@@ -1,5 +1,4 @@
 import { ProductList } from '@/components/product/product-list';
-
 import { getLatestProducts } from '@/lib/actions/product';
 
 export default async function HomePage() {
@@ -8,7 +7,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <ProductList title={title} products={latestProducts} limit={4} />
+      <ProductList limit={4} products={latestProducts} title={title} />
     </>
   );
 }

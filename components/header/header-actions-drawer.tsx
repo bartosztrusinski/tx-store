@@ -1,4 +1,5 @@
 import { EllipsisVertical, ShoppingCart, User } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import {
   Drawer,
@@ -10,20 +11,21 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer';
+
 import { ThemeSwitcher } from './theme-switcher';
 
 export function HeaderActionsDrawer() {
   return (
     <Drawer direction='right'>
       <DrawerTrigger asChild>
-        <Button variant='ghost' className='px-2'>
+        <Button className='px-2' variant='ghost'>
           <EllipsisVertical />
           <span className='sr-only'>Open menu</span>
         </Button>
       </DrawerTrigger>
       <DrawerContent
-        handleDirection='left'
         className='inset-y-2 left-auto right-2 m-0 w-full max-w-72 rounded-lg px-4 after:hidden'
+        handleDirection='left'
         style={{ '--initial-transform': 'calc(100% + 0.5rem)' } as React.CSSProperties}
       >
         <DrawerHeader>
@@ -31,9 +33,9 @@ export function HeaderActionsDrawer() {
           <DrawerDescription />
         </DrawerHeader>
         <nav aria-label='User actions'>
-          <ul role='menubar' className='flex flex-col gap-3 p-2'>
+          <ul className='flex flex-col gap-3 p-2' role='menubar'>
             <li>
-              <Button variant='ghost' className='w-full'>
+              <Button className='w-full' variant='ghost'>
                 <ShoppingCart /> Cart
               </Button>
             </li>

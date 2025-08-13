@@ -1,24 +1,28 @@
 import { z } from 'zod';
 
 export const loginSchema = z.object({
+  callbackUrl: z.string().refine((url) => url.startsWith('/'), {
+    message: 'Invalid callback URL',
+  }),
   email: z.string().email({
     message: 'Please enter a valid email address',
   }),
   password: z.string().min(1, {
     message: 'Please enter your password',
   }),
-  callbackUrl: z.string().refine((url) => url.startsWith('/'), {
-    message: 'Invalid callback URL',
-  }),
 });
 
 export const registerSchema = z
   .object({
-    name: z.string().min(3, {
-      message: 'Name must be at least 3 characters long',
+    callbackUrl: z.string().refine((url) => url.startsWith('/'), {
+      message: 'Invalid callback URL',
     }),
+    confirmPassword: z.string(),
     email: z.string().email({
       message: 'Please enter a valid email address',
+    }),
+    name: z.string().min(3, {
+      message: 'Name must be at least 3 characters long',
     }),
     password: z
       .string()
@@ -37,10 +41,6 @@ export const registerSchema = z
       .regex(/[!@#$%^&*()_+]/, {
         message: 'Password must contain at least one special character',
       }),
-    confirmPassword: z.string(),
-    callbackUrl: z.string().refine((url) => url.startsWith('/'), {
-      message: 'Invalid callback URL',
-    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',

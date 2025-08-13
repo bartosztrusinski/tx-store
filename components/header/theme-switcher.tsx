@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { type LucideIcon, Monitor, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { LucideIcon, Monitor, Moon, Sun } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -14,15 +15,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 type Theme = {
+  Icon: LucideIcon;
   label: string;
   mode: 'light' | 'dark' | 'system';
-  Icon: LucideIcon;
 };
 
 const themes: Theme[] = [
-  { label: 'Light', mode: 'light', Icon: Sun },
-  { label: 'Dark', mode: 'dark', Icon: Moon },
-  { label: 'System', mode: 'system', Icon: Monitor },
+  { Icon: Sun, label: 'Light', mode: 'light' },
+  { Icon: Moon, label: 'Dark', mode: 'dark' },
+  { Icon: Monitor, label: 'System', mode: 'system' },
 ];
 
 type Props = {
@@ -31,7 +32,7 @@ type Props = {
 
 export function ThemeSwitcher({ withText = false }: Props) {
   const [isMounted, setIsMounted] = useState(false);
-  const { theme: activeTheme, setTheme } = useTheme();
+  const { setTheme, theme: activeTheme } = useTheme();
   const { Icon, label } = themes.find(({ mode }) => mode === activeTheme) ?? themes[0];
 
   useEffect(() => {
@@ -41,7 +42,7 @@ export function ThemeSwitcher({ withText = false }: Props) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant='ghost' size={withText ? 'default' : 'icon'} className='flex'>
+        <Button className='flex' size={withText ? 'default' : 'icon'} variant='ghost'>
           {withText && label}
           {isMounted && <Icon className='h-[1.2rem] w-[1.2rem]' />}
           <span className='sr-only'>Toggle theme</span>
@@ -50,12 +51,12 @@ export function ThemeSwitcher({ withText = false }: Props) {
       <DropdownMenuContent className='mx-1'>
         <DropdownMenuLabel>Theme</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {themes.map(({ mode, label }) => (
+        {themes.map(({ label, mode }) => (
           <DropdownMenuCheckboxItem
-            key={mode}
             checked={activeTheme === mode}
-            onCheckedChange={() => setTheme(mode)}
             className='cursor-pointer'
+            key={mode}
+            onCheckedChange={() => setTheme(mode)}
           >
             {label}
           </DropdownMenuCheckboxItem>

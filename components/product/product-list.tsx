@@ -1,15 +1,15 @@
-import type { ReactNode } from 'react';
-import type { Product } from '@prisma/client';
+import { type Product } from '@prisma/client';
+import { type ReactNode } from 'react';
 
 import { ProductCard } from './product-card';
 
 type Props = {
+  limit?: number;
   products: Product[];
   title?: ReactNode;
-  limit?: number;
 };
 
-export function ProductList({ title, products, limit }: Props) {
+export function ProductList({ limit, products, title }: Props) {
   const limitedProducts = limit ? products.toSpliced(limit) : products;
 
   return (

@@ -1,7 +1,7 @@
+import { type Product } from '@prisma/client';
+import { Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star } from 'lucide-react';
-import type { Product } from '@prisma/client';
 
 import {
   Card,
@@ -24,12 +24,12 @@ export function ProductCard({ product }: Props) {
       <CardContent className='rounded-t-lg border-b p-0'>
         <Link href={`/products/${product.slug}`}>
           <Image
-            src={product.images[0]}
             alt={product.name}
-            width={300}
+            className='w-full rounded-t-lg'
             height={300}
             priority
-            className='w-full rounded-t-lg'
+            src={product.images[0]}
+            width={300}
           />
         </Link>
       </CardContent>

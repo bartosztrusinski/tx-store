@@ -1,10 +1,11 @@
 'use server';
 
-import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
+
 import { auth } from '@/lib/auth';
 import { loginSchema, registerSchema } from '@/lib/schemas/auth';
-import type { ActionResponse } from '@/lib/types';
+import { type ActionResponse } from '@/lib/types';
 
 export async function logIn(
   _: ActionResponse<typeof loginSchema>,
@@ -15,13 +16,13 @@ export async function logIn(
 
   if (!validationResult.success) {
     return {
+      errors: validationResult.error.flatten().fieldErrors,
       isSuccess: false,
       message: validationResult.error.flatten().formErrors[0],
-      errors: validationResult.error.flatten().fieldErrors,
     };
   }
 
-  const { email, password, callbackUrl } = validationResult.data;
+  const { callbackUrl, email, password } = validationResult.data;
 
   try {
     await auth.api.signInEmail({ body: { email, password } });
@@ -38,6 +39,10 @@ export async function logIn(
   redirect(callbackUrl);
 }
 
+export async function logOut() {
+  await auth.api.signOut({ headers: await headers() });
+}
+
 export async function register(
   _: ActionResponse<typeof registerSchema>,
   formData: FormData,
@@ -47,13 +52,13 @@ export async function register(
 
   if (!validationResult.success) {
     return {
+      errors: validationResult.error.flatten().fieldErrors,
       isSuccess: false,
       message: validationResult.error.flatten().formErrors[0],
-      errors: validationResult.error.flatten().fieldErrors,
     };
   }
 
-  const { email, name, password, callbackUrl } = validationResult.data;
+  const { callbackUrl, email, name, password } = validationResult.data;
 
   try {
     await auth.api.signUpEmail({
@@ -70,8 +75,4 @@ export async function register(
   }
 
   redirect(callbackUrl);
-}
-
-export async function logOut() {
-  await auth.api.signOut({ headers: await headers() });
 }

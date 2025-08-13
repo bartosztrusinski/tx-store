@@ -1,12 +1,13 @@
+import { ArrowLeftCircle } from 'lucide-react';
+import { headers } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
-import { ArrowLeftCircle } from 'lucide-react';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+
 import { LoginForm } from '@/components/auth/login-form';
-import { APP_NAME } from '@/lib/constants';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { auth } from '@/lib/auth';
+import { APP_NAME } from '@/lib/constants';
 
 type Props = {
   searchParams: Promise<{ callbackUrl?: string }>;
@@ -24,13 +25,13 @@ export default async function LoginPage({ searchParams }: Props) {
 
   return (
     <Card className='relative basis-full space-y-2'>
-      <Link href='/' className='flex-center absolute left-1 top-1 gap-1 p-2 text-sm'>
+      <Link className='flex-center absolute left-1 top-1 gap-1 p-2 text-sm' href='/'>
         <ArrowLeftCircle className='size-5' />
         Back
       </Link>
       <CardHeader className='flex-center gap-1'>
-        <Link href='/' className='p-0.5'>
-          <Image src='/images/logo.svg' alt={`${APP_NAME} logo`} width={36} height={36} />
+        <Link className='p-0.5' href='/'>
+          <Image alt={`${APP_NAME} logo`} height={36} src='/images/logo.svg' width={36} />
         </Link>
         <h1 className='heading-2'>Log In</h1>
         <p className='text-pretty text-center text-muted-foreground'>
@@ -43,7 +44,7 @@ export default async function LoginPage({ searchParams }: Props) {
       <CardFooter>
         <p>
           Don&apos;t have an account?{' '}
-          <Link href='/register' className='underline'>
+          <Link className='underline' href='/register'>
             Sign Up
           </Link>
         </p>

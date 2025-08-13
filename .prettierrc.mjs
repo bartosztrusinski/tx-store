@@ -3,11 +3,11 @@
  * @type {import("prettier").Config}
  */
 const config = {
-  singleQuote: true,
-  jsxSingleQuote: true,
   experimentalTernaries: true,
-  printWidth: 100,
+  jsxSingleQuote: true,
   plugins: ['prettier-plugin-tailwindcss'],
+  printWidth: 100,
+  singleQuote: true,
 };
 
 export default config;
