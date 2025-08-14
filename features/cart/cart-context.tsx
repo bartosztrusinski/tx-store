@@ -1,32 +1,51 @@
 'use client';
 
 import { type Product } from '@prisma/client';
-import { createContext, type ReactNode, useContext, useState } from 'react';
+import {
+  createContext,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
+  useContext,
+  useState,
+} from 'react';
 
-type CartContextType = {
-  cartItems: Map<Product['id'], CartItem>;
+type CartActions = {
+  cartItems: CartItems;
   decrementItemQuantity: (id: Product['id']) => void;
+  getItemQuantity: (id: Product['id']) => number | null;
   incrementItemQuantity: (id: Product['id']) => void;
   removeItem: (id: Product['id']) => void;
   setItemQuantity: (id: Product['id'], quantity: number) => void;
 };
 
-type CartItem = {
-  quantity: number;
+type CartContext = {
+  cartItems: CartItems;
+  setCartItems: Dispatch<SetStateAction<CartItems>>;
 };
 
-const CartContext = createContext<CartContextType>({
-  cartItems: new Map(),
-  decrementItemQuantity: () => {},
-  incrementItemQuantity: () => {},
-  removeItem: () => {},
-  setItemQuantity: () => {},
-});
+type CartItems = Map<Product['id'], { quantity: number }>;
+
+const CartContext = createContext<CartContext | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cartItems, setCartItems] = useState<CartContextType['cartItems']>(new Map());
+  const [cartItems, setCartItems] = useState<CartItems>(new Map());
 
-  const getItemQuantity = (id: Product['id']): CartItem['quantity'] | null => {
+  return (
+    <CartContext.Provider value={{ cartItems, setCartItems }}>{children}</CartContext.Provider>
+  );
+}
+
+export function useCart(): CartActions {
+  const context = useContext(CartContext);
+
+  if (!context) {
+    throw new Error(`${useCart.name} must be used within ${CartProvider.name}`);
+  }
+
+  const { cartItems, setCartItems } = context;
+
+  const getItemQuantity = (id: Product['id']): number | null => {
     return cartItems.get(id)?.quantity ?? null;
   };
 
@@ -66,27 +85,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  return (
-    <CartContext.Provider
-      value={{
-        cartItems,
-        decrementItemQuantity,
-        incrementItemQuantity,
-        removeItem,
-        setItemQuantity,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
-  );
-}
-
-export function useCart() {
-  const context = useContext(CartContext);
-
-  if (!context) {
-    throw new Error(`${useCart.name} must be used within ${CartProvider.name}`);
-  }
-
-  return context;
+  return {
+    cartItems,
+    decrementItemQuantity,
+    getItemQuantity,
+    incrementItemQuantity,
+    removeItem,
+    setItemQuantity,
+  };
 }
