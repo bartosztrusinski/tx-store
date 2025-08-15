@@ -1,11 +1,11 @@
 'use client';
 
 import { type Product } from '@prisma/client';
-import { Minus, Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
 import { useCart } from '../cart-context';
+import { QuantityStepper } from './quantity-stepper';
 
 type Props = {
   productId: Product['id'];
@@ -30,29 +30,19 @@ export function AddToCartControl({ productId, productStock }: Props) {
 
   return (
     <>
-      <div className='mt-4 flex items-center gap-2'>
-        <Button
-          disabled={cartItem.quantity < 1}
-          onClick={() =>
-            dispatch({ payload: { id: productId }, type: 'cart/decrementItemQuantity' })
-          }
-        >
-          <Minus />
-          <span className='sr-only'>Remove one from cart</span>
-        </Button>
-        <span className='grow text-center text-xl'>{cartItem.quantity}</span>
-        <Button
-          disabled={cartItem.quantity >= productStock}
-          onClick={() =>
-            dispatch({ payload: { id: productId }, type: 'cart/incrementItemQuantity' })
-          }
-        >
-          <Plus />
-          <span className='sr-only'>Add one more to cart</span>
-        </Button>
-      </div>
+      <QuantityStepper
+        currentValue={cartItem.quantity}
+        maxValue={productStock}
+        minValue={1}
+        onDecrement={() =>
+          dispatch({ payload: { id: productId }, type: 'cart/decrementItemQuantity' })
+        }
+        onIncrement={() =>
+          dispatch({ payload: { id: productId }, type: 'cart/incrementItemQuantity' })
+        }
+      />
       {cartItem.quantity === productStock && (
-        <p className='mt-2 text-sm text-destructive'>No more products available</p>
+        <p className='mt-2 text-sm text-destructive'>No more available</p>
       )}
     </>
   );
