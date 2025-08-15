@@ -45,7 +45,9 @@ export function ProductDetail({ product }: Props) {
               {isInStock ? 'In Stock' : 'Out of Stock'}
             </Badge>
           </div>
-          <AddToCartControl productId={product.id} productStock={product.stock} />
+          <div className='mt-4'>
+            <AddToCartControl productId={product.id} productStock={product.stock} />
+          </div>
         </Card>
       </section>
     </article>

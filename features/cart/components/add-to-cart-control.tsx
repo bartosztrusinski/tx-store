@@ -13,16 +13,15 @@ type Props = {
 };
 
 export function AddToCartControl({ productId, productStock }: Props) {
-  const { cartItems, decrementItemQuantity, incrementItemQuantity } = useCart();
-  const cartItem = cartItems.get(productId);
+  const { cart, dispatch } = useCart();
+  const cartItem = cart.get(productId);
 
   if (!cartItem?.quantity) {
     return (
       <Button
-        className='mt-4 w-full'
+        className='w-full'
         disabled={productStock === 0}
-        onClick={() => incrementItemQuantity(productId)}
-        size='lg'
+        onClick={() => dispatch({ payload: { id: productId }, type: 'cart/incrementItemQuantity' })}
       >
         Add to Bag
       </Button>
@@ -33,25 +32,27 @@ export function AddToCartControl({ productId, productStock }: Props) {
     <>
       <div className='mt-4 flex items-center gap-2'>
         <Button
-          className='size-11'
           disabled={cartItem.quantity < 1}
-          onClick={() => decrementItemQuantity(productId)}
+          onClick={() =>
+            dispatch({ payload: { id: productId }, type: 'cart/decrementItemQuantity' })
+          }
         >
           <Minus />
           <span className='sr-only'>Remove one from cart</span>
         </Button>
         <span className='grow text-center text-xl'>{cartItem.quantity}</span>
         <Button
-          className='size-11'
           disabled={cartItem.quantity >= productStock}
-          onClick={() => incrementItemQuantity(productId)}
+          onClick={() =>
+            dispatch({ payload: { id: productId }, type: 'cart/incrementItemQuantity' })
+          }
         >
           <Plus />
           <span className='sr-only'>Add one more to cart</span>
         </Button>
       </div>
       {cartItem.quantity === productStock && (
-        <p className='mt-2 text-center text-sm text-destructive'>No more available</p>
+        <p className='mt-2 text-sm text-destructive'>No more products available</p>
       )}
     </>
   );
