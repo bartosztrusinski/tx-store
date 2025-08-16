@@ -29,21 +29,18 @@ export function AddToCartControl({ productId, productStock }: Props) {
   }
 
   return (
-    <>
-      <QuantityStepper
-        currentValue={cartItem.quantity}
-        maxValue={productStock}
-        minValue={1}
-        onDecrement={() =>
-          dispatch({ payload: { id: productId }, type: 'cart/decrementItemQuantity' })
-        }
-        onIncrement={() =>
-          dispatch({ payload: { id: productId }, type: 'cart/incrementItemQuantity' })
-        }
-      />
-      {cartItem.quantity === productStock && (
-        <p className='mt-2 text-sm text-destructive'>No more available</p>
-      )}
-    </>
+    <QuantityStepper
+      max={productStock}
+      onChange={(value) =>
+        dispatch({ payload: { id: productId, quantity: value }, type: 'cart/setItemQuantity' })
+      }
+      onDecrement={() =>
+        dispatch({ payload: { id: productId }, type: 'cart/decrementItemQuantity' })
+      }
+      onIncrement={() =>
+        dispatch({ payload: { id: productId }, type: 'cart/incrementItemQuantity' })
+      }
+      quantity={cartItem.quantity}
+    />
   );
 }
