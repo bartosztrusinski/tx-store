@@ -1,7 +1,7 @@
 'use client';
 
 import { Minus, Plus } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,68 +23,77 @@ export function QuantityStepper({
   onIncrement,
   quantity,
 }: Props) {
-  const [inputValue, setInputValue] = useState<string>(quantity.toString());
-  const clamp = (value: number) => Math.min(Math.max(value, min), max);
-  const isCancelling = useRef(false);
+  const [draftValue, setDraftValue] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const shouldCommitOnBlur = useRef(false);
+  const displayValue = isEditing ? draftValue : quantity;
+  const clamp = (quantity: number) => Math.min(Math.max(quantity, min), max);
 
-  useEffect(() => {
-    if (quantity.toString() !== inputValue) {
-      setInputValue(quantity.toString());
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quantity]);
+  function commitDraft() {
+    const updatedQuantity = clamp(parseInt(draftValue, 10));
 
-  function commitValue() {
-    if (inputValue === '') {
-      setInputValue(quantity.toString());
-      return;
+    if (draftValue !== '' && updatedQuantity !== quantity) {
+      onChange(updatedQuantity);
     }
 
-    const updatedValue = clamp(parseInt(inputValue, 10));
+    cancelEditing();
+  }
 
-    if (updatedValue !== quantity) {
-      onChange(updatedValue);
-    }
+  function cancelEditing() {
+    setIsEditing(false);
+  }
 
-    setInputValue(updatedValue.toString());
+  function startEditing() {
+    setIsEditing(true);
+    setDraftValue(quantity.toString());
   }
 
   return (
     <div className='flex items-center gap-2'>
-      <Button disabled={quantity <= min} onClick={onDecrement}>
+      <Button
+        disabled={quantity <= min}
+        onClick={() => {
+          if (isEditing) cancelEditing();
+          onDecrement();
+        }}
+      >
         <Minus />
-        <span className='sr-only'>Decrease value by one</span>
+        <span className='sr-only'>Decrease quantity by one</span>
       </Button>
       <Input
         aria-label='Quantity'
         className='text-center'
         inputMode='numeric'
-        onBlur={() => {
-          if (isCancelling.current) {
-            isCancelling.current = false;
-            return;
-          }
-
-          commitValue();
+        onBlur={() => shouldCommitOnBlur.current && commitDraft()}
+        onChange={(event) => setDraftValue(event.target.value.replace(/[^0-9]/g, ''))}
+        onFocus={() => {
+          startEditing();
+          shouldCommitOnBlur.current = true;
         }}
-        onChange={(event) => setInputValue(event.target.value.replace(/[^0-9]/g, ''))}
         onKeyDown={(event) => {
           if (event.key === 'Enter') {
-            commitValue();
+            commitDraft();
+            shouldCommitOnBlur.current = false;
             event.currentTarget.blur();
           }
 
           if (event.key === 'Escape') {
-            isCancelling.current = true;
-            setInputValue(quantity.toString());
+            cancelEditing();
+            shouldCommitOnBlur.current = false;
             event.currentTarget.blur();
           }
         }}
-        value={inputValue}
+        value={displayValue}
       />
-      <Button disabled={quantity >= max} onClick={onIncrement}>
+      <Button
+        disabled={quantity >= max}
+        onClick={() => {
+          if (isEditing) cancelEditing();
+          onIncrement();
+        }}
+      >
         <Plus />
-        <span className='sr-only'>Increase value by one</span>
+        <span className='sr-only'>Increase quantity by one</span>
       </Button>
     </div>
   );
