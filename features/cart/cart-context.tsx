@@ -22,31 +22,43 @@ function cartReducer(state: State, action: Action): State {
         return state;
       }
 
-      if (currentQuantity > 1) {
-        updatedState.set(id, { quantity: currentQuantity - 1 });
-      } else {
+      if (currentQuantity <= 1) {
         updatedState.delete(id);
+      } else {
+        updatedState.set(id, { quantity: currentQuantity - 1 });
       }
 
       return updatedState;
     }
+
     case 'cart/incrementItemQuantity': {
       const { id } = action.payload;
       const currentQuantity = state.get(id)?.quantity ?? 0;
       return new Map(state).set(id, { quantity: currentQuantity + 1 });
     }
+
     case 'cart/removeItem': {
       const { id } = action.payload;
       const updatedState = new Map(state);
       updatedState.delete(id);
       return updatedState;
     }
+
     case 'cart/setItemQuantity': {
       const { id, quantity } = action.payload;
-      return new Map(state).set(id, { quantity: Math.max(0, Math.round(quantity)) });
+      const updatedState = new Map(state);
+
+      if (quantity <= 0) {
+        updatedState.delete(id);
+      } else {
+        updatedState.set(id, { quantity });
+      }
+
+      return updatedState;
     }
+
     default: {
-      throw new Error(`Unhandled action: ${action}`);
+      throw new Error(`Unhandled action: ${(action as Action).type}`);
     }
   }
 }
