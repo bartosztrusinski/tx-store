@@ -11,6 +11,10 @@ const eslintConfig = [
   {
     rules: {
       '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
       'perfectionist/sort-union-types': ['error', { type: 'unsorted' }],
     },
   },
