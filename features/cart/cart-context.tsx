@@ -9,56 +9,52 @@ type Action =
   | { payload: { id: Product['id'] }; type: 'cart/removeItem' }
   | { payload: { id: Product['id']; quantity: number }; type: 'cart/setItemQuantity' };
 type Dispatch = (action: Action) => void;
-type State = Map<Product['id'], { quantity: number }>;
+type State = Record<Product['id'], { quantity: number }>;
 
 function cartReducer(state: State, action: Action): State {
   switch (action.type) {
     case 'cart/decrementItemQuantity': {
       const { id } = action.payload;
-      const currentQuantity = state.get(id)?.quantity;
-      const updatedState = new Map(state);
+      const currentQuantity = state[id]?.quantity;
 
       if (!currentQuantity) {
         return state;
       }
 
       if (currentQuantity <= 1) {
-        updatedState.delete(id);
-      } else {
-        updatedState.set(id, { quantity: currentQuantity - 1 });
+        const { [id]: _, ...updatedState } = state;
+        return updatedState;
       }
 
-      return updatedState;
+      return { ...state, [id]: { ...state[id], quantity: currentQuantity - 1 } };
     }
 
     case 'cart/incrementItemQuantity': {
       const { id } = action.payload;
-      const currentQuantity = state.get(id)?.quantity ?? 0;
-      return new Map(state).set(id, { quantity: currentQuantity + 1 });
+      const currentQuantity = state[id]?.quantity ?? 0;
+      return { ...state, [id]: { ...state[id], quantity: currentQuantity + 1 } };
     }
 
     case 'cart/removeItem': {
       const { id } = action.payload;
-      const updatedState = new Map(state);
-      updatedState.delete(id);
+      const { [id]: _, ...updatedState } = state;
       return updatedState;
     }
 
     case 'cart/setItemQuantity': {
       const { id, quantity } = action.payload;
-      const updatedState = new Map(state);
 
       if (quantity <= 0) {
-        updatedState.delete(id);
-      } else {
-        updatedState.set(id, { quantity });
+        const { [id]: _, ...updatedState } = state;
+        return updatedState;
       }
 
-      return updatedState;
+      return { ...state, [id]: { ...state[id], quantity } };
     }
 
     default: {
-      throw new Error(`Unhandled action: ${(action as Action).type}`);
+      const _exhaustiveCheck: never = action;
+      throw new Error(`Unhandled action: ${(_exhaustiveCheck as Action).type}`);
     }
   }
 }
@@ -66,7 +62,7 @@ function cartReducer(state: State, action: Action): State {
 const CartContext = createContext<{ cart: State; dispatch: Dispatch } | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cart, dispatch] = useReducer(cartReducer, new Map());
+  const [cart, dispatch] = useReducer(cartReducer, {});
   const value = { cart, dispatch };
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
