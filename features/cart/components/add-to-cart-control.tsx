@@ -14,7 +14,7 @@ type Props = {
 
 export function AddToCartControl({ productId, productStock }: Props) {
   const { cart, dispatch } = useCart();
-  const cartItem = cart.get(productId);
+  const cartItem = cart[productId];
 
   if (!cartItem?.quantity) {
     return (
@@ -23,7 +23,7 @@ export function AddToCartControl({ productId, productStock }: Props) {
         disabled={productStock === 0}
         onClick={() => dispatch({ payload: { id: productId }, type: 'cart/incrementItemQuantity' })}
       >
-        Add to Bag
+        {productStock === 0 ? 'Out of Stock' : 'Add to Bag'}
       </Button>
     );
   }

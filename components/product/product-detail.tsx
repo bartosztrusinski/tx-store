@@ -1,6 +1,5 @@
 import { type Product } from '@prisma/client';
 
-import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { AddToCartControl } from '@/features/cart/components/add-to-cart-control';
 
@@ -13,6 +12,7 @@ type Props = {
 
 export function ProductDetail({ product }: Props) {
   const isInStock = product.stock > 0;
+  const isLowStock = isInStock && product.stock < 5;
   const hasImages = product.images.length > 0;
 
   return (
@@ -40,10 +40,10 @@ export function ProductDetail({ product }: Props) {
             <ProductPrice price={product.price.toNumber()} size='sm' />
           </div>
           <div className='flex-between mt-2 gap-2'>
-            <span>Status</span>
-            <Badge className='text-sm' variant={isInStock ? 'outline' : 'destructive'}>
-              {isInStock ? 'In Stock' : 'Out of Stock'}
-            </Badge>
+            <span>Stock</span>
+            <span className={`${isLowStock || !isInStock ? 'text-red-600' : ''}`}>
+              {isInStock ? product.stock : 'Out of stock'}
+            </span>
           </div>
           <div className='mt-4'>
             <AddToCartControl productId={product.id} productStock={product.stock} />
