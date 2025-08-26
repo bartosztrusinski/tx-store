@@ -20,8 +20,10 @@ type Theme = {
   mode: 'light' | 'dark' | 'system';
 };
 
+const defaultTheme: Theme = { Icon: Sun, label: 'Light', mode: 'light' };
+
 const themes: Theme[] = [
-  { Icon: Sun, label: 'Light', mode: 'light' },
+  defaultTheme,
   { Icon: Moon, label: 'Dark', mode: 'dark' },
   { Icon: Monitor, label: 'System', mode: 'system' },
 ];
@@ -33,7 +35,7 @@ type Props = {
 export function ThemeSwitcher({ withText = false }: Props) {
   const [isMounted, setIsMounted] = useState(false);
   const { setTheme, theme: activeTheme } = useTheme();
-  const { Icon, label } = themes.find(({ mode }) => mode === activeTheme) ?? themes[0];
+  const { Icon, label } = themes.find(({ mode }) => mode === activeTheme) ?? defaultTheme;
 
   useEffect(() => {
     setIsMounted(true);
