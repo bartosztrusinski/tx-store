@@ -18,9 +18,9 @@ model User {
   createdAt     DateTime
   updatedAt     DateTime
 
-  sessions  Session[]
-  accounts  Account[]
-  cartItems CartItem[]
+  sessions Session[]
+  accounts Account[]
+  cart     Cart?
 }
 
 model Session {
@@ -78,8 +78,21 @@ model Product {
   banner      String?
   isFeatured  Boolean  @default(false)
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   cartItems CartItem[]
+}
+
+model Cart {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sessionId String?  @unique
+
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  items CartItem[]
 }
 
 model CartItem {
@@ -88,11 +101,11 @@ model CartItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   productId Int
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, productId], map: "cart_user_product_unique_index")
+  cartId Int
+  cart   Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, productId])
 }
