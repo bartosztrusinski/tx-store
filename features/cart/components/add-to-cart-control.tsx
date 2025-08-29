@@ -1,28 +1,35 @@
 'use client';
 
 import { type Product } from '@prisma/client';
+import { startTransition, useOptimistic } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { setCartItem } from '@/features/cart/actions';
 
-import { useCart } from '../cart-context';
 import { QuantityStepper } from './quantity-stepper';
 
 type Props = {
+  cartQuantity: number;
   productId: Product['id'];
   productStock: Product['stock'];
 };
 
-export function AddToCartControl({ productId, productStock }: Props) {
-  const { cart, dispatch } = useCart();
-  const cartItem = cart[productId];
+export function AddToCartControl({ cartQuantity, productId, productStock }: Props) {
+  const [optimisticQuantity, setOptimisticQuantity] = useOptimistic<number, number>(
+    cartQuantity,
+    (_, newQuantity) => newQuantity,
+  );
 
-  if (!cartItem?.quantity) {
+  const handleCartUpdate = async (quantity: number) => {
+    startTransition(async () => {
+      setOptimisticQuantity(quantity);
+      await setCartItem(productId, quantity);
+    });
+  };
+
+  if (optimisticQuantity === 0) {
     return (
-      <Button
-        className='w-full'
-        disabled={productStock === 0}
-        onClick={() => dispatch({ payload: { id: productId }, type: 'cart/incrementItemQuantity' })}
-      >
+      <Button className='w-full' disabled={productStock === 0} onClick={() => handleCartUpdate(1)}>
         {productStock === 0 ? 'Out of Stock' : 'Add to Bag'}
       </Button>
     );
@@ -31,16 +38,10 @@ export function AddToCartControl({ productId, productStock }: Props) {
   return (
     <QuantityStepper
       max={productStock}
-      onChange={(value) =>
-        dispatch({ payload: { id: productId, quantity: value }, type: 'cart/setItemQuantity' })
-      }
-      onDecrement={() =>
-        dispatch({ payload: { id: productId }, type: 'cart/decrementItemQuantity' })
-      }
-      onIncrement={() =>
-        dispatch({ payload: { id: productId }, type: 'cart/incrementItemQuantity' })
-      }
-      quantity={cartItem.quantity}
+      onChange={(value) => handleCartUpdate(value)}
+      onDecrement={() => handleCartUpdate(optimisticQuantity - 1)}
+      onIncrement={() => handleCartUpdate(optimisticQuantity + 1)}
+      quantity={optimisticQuantity}
     />
   );
 }

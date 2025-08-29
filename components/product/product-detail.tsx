@@ -1,7 +1,7 @@
 import { type Product } from '@prisma/client';
 
 import { Card } from '@/components/ui/card';
-import { AddToCartControl } from '@/features/cart/components/add-to-cart-control';
+import { AddToCartWrapper } from '@/features/cart/components/add-to-cart-wrapper';
 
 import { ProductImageGallery } from './product-image-gallery';
 import { ProductPrice } from './product-price';
@@ -46,7 +46,7 @@ export function ProductDetail({ product }: Props) {
             </span>
           </div>
           <div className='mt-4'>
-            <AddToCartControl productId={product.id} productStock={product.stock} />
+            <AddToCartWrapper productId={product.id} productStock={product.stock} />
           </div>
         </Card>
       </section>
