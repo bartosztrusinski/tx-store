@@ -1,5 +1,5 @@
-import { type Product } from '@prisma/client';
-import { headers } from 'next/headers';
+import { type CartItem, type Product } from '@prisma/client';
+import { cookies, headers } from 'next/headers';
 
 import { AddToCartControl } from '@/features/cart/components/add-to-cart-control';
 import { auth } from '@/lib/auth';
@@ -11,21 +11,34 @@ type Props = {
 };
 
 export async function AddToCartWrapper({ productId, productStock }: Props) {
-  const session = await auth.api.getSession({ headers: await headers() });
-
-  if (!session) {
-    return null;
-  }
-
-  const cartItem = await prisma.cartItem.findUnique({
-    where: { userId_productId: { productId: productId, userId: session?.user.id } },
-  });
+  const cartItemQuantity = await getCartItemQuantity(productId);
 
   return (
     <AddToCartControl
-      cartQuantity={cartItem?.quantity ?? 0}
+      cartQuantity={cartItemQuantity ?? 0}
       productId={productId}
       productStock={productStock}
     />
   );
+}
+
+async function getCartItemQuantity(productId: number): Promise<CartItem['quantity'] | null> {
+  const session = await auth.api.getSession({ headers: await headers() });
+  const userId = session?.user.id;
+  const cookieStore = await cookies();
+  const sessionId = cookieStore.get('cartId')?.value;
+
+  if (!userId && !sessionId) {
+    return null;
+  }
+
+  const cartItem = await prisma.cartItem.findFirst({
+    select: { quantity: true },
+    where: {
+      cart: userId ? { userId } : { sessionId },
+      productId,
+    },
+  });
+
+  return cartItem?.quantity ?? null;
 }
