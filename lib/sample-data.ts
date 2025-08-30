@@ -1,7 +1,21 @@
 import { Prisma, type Product } from '@prisma/client';
 
 export const sampleData: {
-  products: Omit<Product, 'id' | 'createdAt'>[];
+  products: Pick<
+    Product,
+    | 'banner'
+    | 'brand'
+    | 'category'
+    | 'description'
+    | 'images'
+    | 'isFeatured'
+    | 'name'
+    | 'numReviews'
+    | 'price'
+    | 'rating'
+    | 'slug'
+    | 'stock'
+  >[];
   users: { email: string; name: string; password: string }[];
 } = {
   products: [
