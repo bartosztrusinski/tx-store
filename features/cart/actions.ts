@@ -1,12 +1,67 @@
 'use server';
 
-import { type Cart } from '@prisma/client';
+import { type Cart, type CartItem } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { cookies, headers } from 'next/headers';
 import { randomUUID } from 'node:crypto';
 
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+
+export async function mergeCarts(userId: string) {
+  const cookieStore = await cookies();
+  const sessionId = cookieStore.get('cartId')?.value;
+
+  if (!sessionId) {
+    return { success: true };
+  }
+
+  // query products from both carts
+  const cartItems = await prisma.cartItem.findMany({
+    where: {
+      cart: { OR: [{ userId }, { sessionId }] },
+    },
+  });
+
+  // merge items
+  const mergedCartItems = cartItems.reduce<Record<CartItem['productId'], CartItem>>(
+    (items, item) => {
+      const existingItem = items[item.productId];
+
+      return {
+        ...items,
+        [item.productId]: {
+          ...existingItem,
+          ...item,
+          quantity: (existingItem?.quantity ?? 0) + item.quantity,
+        },
+      };
+    },
+    {},
+  );
+
+  // get users cart id
+  const userCartId = (await findUserCartId(userId)) ?? (await createUserCart(userId));
+
+  // create or update cart items in users cart
+  await Promise.all(
+    Object.values(mergedCartItems).map((item) =>
+      prisma.cartItem.upsert({
+        create: { cartId: userCartId, productId: item.productId, quantity: item.quantity },
+        update: { cartId: userCartId, quantity: item.quantity },
+        where: { cartId_productId: { cartId: userCartId, productId: item.productId } },
+      }),
+    ),
+  );
+
+  // remove guest cart
+  await prisma.cart.delete({ where: { sessionId } });
+
+  // clear cart cookie
+  cookieStore.delete('cartId');
+
+  return { success: true };
+}
 
 export async function setCartItem(productId: number, quantity: number) {
   const cartId = await getCartId();
@@ -39,11 +94,16 @@ export async function setCartItem(productId: number, quantity: number) {
 
 async function createGuestCart(): Promise<Cart['id']> {
   const sessionId = randomUUID();
+  const cookieStore = await cookies();
   const newCart = await prisma.cart.create({
     data: { sessionId },
   });
 
-  cookieStore.set('cartId', sessionId);
+  cookieStore.set('cartId', sessionId, {
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: true,
+  });
 
   return newCart.id;
 }
