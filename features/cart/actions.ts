@@ -1,6 +1,6 @@
 'use server';
 
-import { type Cart, type CartItem } from '@prisma/client';
+import { type Cart } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { cookies, headers } from 'next/headers';
 import { randomUUID } from 'node:crypto';
@@ -16,49 +16,54 @@ export async function mergeCarts(userId: string) {
     return { success: true };
   }
 
-  // query products from both carts
-  const cartItems = await prisma.cartItem.findMany({
-    where: {
-      cart: { OR: [{ userId }, { sessionId }] },
-    },
+  // 1: Get the guest cart and its items
+  const guestCart = await prisma.cart.findUnique({
+    include: { items: { select: { productId: true, quantity: true } } },
+    where: { sessionId },
   });
 
-  // merge items
-  const mergedCartItems = cartItems.reduce<Record<CartItem['productId'], CartItem>>(
-    (items, item) => {
-      const existingItem = items[item.productId];
+  // If guest cart is empty or doesn't exist, just clean up and exit
+  if (!guestCart || guestCart.items.length === 0) {
+    if (guestCart) await prisma.cart.delete({ where: { id: guestCart.id } });
+    cookieStore.delete('cartId');
+    return { success: true };
+  }
 
-      return {
-        ...items,
-        [item.productId]: {
-          ...existingItem,
-          ...item,
-          quantity: (existingItem?.quantity ?? 0) + item.quantity,
-        },
-      };
-    },
-    {},
-  );
+  // 2: Upsert the user's cart AND get its items in a single query
+  const userCart = await prisma.cart.upsert({
+    create: { userId },
+    include: { items: { select: { productId: true, quantity: true } } },
+    update: {},
+    where: { userId },
+  });
 
-  // get users cart id
-  const userCartId = (await findUserCartId(userId)) ?? (await createUserCart(userId));
+  // Merge items
+  const mergedItems: Record<number, number> = {};
 
-  // create or update cart items in users cart
-  await Promise.all(
-    Object.values(mergedCartItems).map((item) =>
-      prisma.cartItem.upsert({
-        create: { cartId: userCartId, productId: item.productId, quantity: item.quantity },
-        update: { cartId: userCartId, quantity: item.quantity },
-        where: { cartId_productId: { cartId: userCartId, productId: item.productId } },
-      }),
-    ),
-  );
+  // Add user items
+  for (const item of userCart.items) {
+    mergedItems[item.productId] = (mergedItems[item.productId] ?? 0) + item.quantity;
+  }
 
-  // remove guest cart
-  await prisma.cart.delete({ where: { sessionId } });
+  // Add guest items
+  for (const item of guestCart.items) {
+    mergedItems[item.productId] = (mergedItems[item.productId] ?? 0) + item.quantity;
+  }
 
-  // clear cart cookie
+  // Prepare data for bulk insert
+  const dataForCreateMany = Object.entries(mergedItems).map(([productId, quantity]) => ({
+    cartId: userCart.id,
+    productId: Number(productId),
+    quantity,
+  }));
+
+  // TODO Transaction
+  await prisma.cartItem.deleteMany({ where: { cartId: userCart.id } });
+  await prisma.cartItem.createMany({ data: dataForCreateMany });
+  await prisma.cart.delete({ where: { id: guestCart.id } });
+
   cookieStore.delete('cartId');
+  revalidatePath('/');
 
   return { success: true };
 }
