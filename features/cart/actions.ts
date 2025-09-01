@@ -69,14 +69,7 @@ export async function mergeCarts(userId: string) {
 }
 
 export async function setCartItem(productId: number, quantity: number) {
-  const cartId = await getCartId();
-
-  if (!cartId) {
-    return {
-      message: 'Cart not found',
-      success: false,
-    };
-  }
+  const cartId: Cart['id'] = (await findCartId()) ?? (await createCart());
 
   revalidatePath('/');
 
@@ -95,6 +88,17 @@ export async function setCartItem(productId: number, quantity: number) {
   });
 
   return { success: true };
+}
+
+async function createCart(): Promise<Cart['id']> {
+  const session = await auth.api.getSession({ headers: await headers() });
+  const userId = session?.user.id;
+
+  if (userId) {
+    return await createUserCart(userId);
+  }
+
+  return await createGuestCart();
 }
 
 async function createGuestCart(): Promise<Cart['id']> {
@@ -121,6 +125,23 @@ async function createUserCart(userId: Cart['userId']): Promise<Cart['id']> {
   return newCart.id;
 }
 
+async function findCartId(): Promise<Cart['id'] | null> {
+  const session = await auth.api.getSession({ headers: await headers() });
+  const userId = session?.user.id;
+  const cookieStore = await cookies();
+  const sessionId = cookieStore.get('cartId')?.value;
+
+  if (userId) {
+    return await findUserCartId(userId);
+  }
+
+  if (sessionId) {
+    return await findGuestCartId(sessionId);
+  }
+
+  return null;
+}
+
 async function findGuestCartId(sessionId: string): Promise<Cart['id'] | null> {
   const cart = await prisma.cart.findUnique({
     select: { id: true },
@@ -137,23 +158,4 @@ async function findUserCartId(userId: string): Promise<Cart['id'] | null> {
   });
 
   return cart?.id ?? null;
-}
-
-async function getCartId(): Promise<Cart['id'] | null> {
-  const session = await auth.api.getSession({ headers: await headers() });
-  const userId = session?.user.id;
-  const cookieStore = await cookies();
-  const sessionId = cookieStore.get('cartId')?.value;
-
-  if (userId) {
-    const cartId = await findUserCartId(userId);
-    return cartId ?? (await createUserCart(userId));
-  }
-
-  if (sessionId) {
-    const cartId = await findGuestCartId(sessionId);
-    return cartId ?? (await createGuestCart());
-  }
-
-  return null;
 }
