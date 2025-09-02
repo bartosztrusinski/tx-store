@@ -1,6 +1,6 @@
 'use server';
 
-import { type Cart } from '@prisma/client';
+import { type Cart, type CartItem } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { cookies, headers } from 'next/headers';
 import { randomUUID } from 'node:crypto';
@@ -16,20 +16,22 @@ export async function mergeCarts(userId: string) {
     return { success: true };
   }
 
-  // 1: Get the guest cart and its items
   const guestCart = await prisma.cart.findUnique({
     include: { items: { select: { productId: true, quantity: true } } },
     where: { sessionId },
   });
 
-  // If guest cart is empty or doesn't exist, just clean up and exit
-  if (!guestCart || guestCart.items.length === 0) {
-    if (guestCart) await prisma.cart.delete({ where: { id: guestCart.id } });
+  if (!guestCart) {
     cookieStore.delete('cartId');
     return { success: true };
   }
 
-  // 2: Upsert the user's cart AND get its items in a single query
+  if (guestCart.items.length === 0) {
+    await prisma.cart.delete({ where: { id: guestCart.id } });
+    cookieStore.delete('cartId');
+    return { success: true };
+  }
+
   const userCart = await prisma.cart.upsert({
     create: { userId },
     include: { items: { select: { productId: true, quantity: true } } },
@@ -37,31 +39,27 @@ export async function mergeCarts(userId: string) {
     where: { userId },
   });
 
-  // Merge items
-  const mergedItems: Record<number, number> = {};
+  const mergedItems = [...userCart.items, ...guestCart.items].reduce<
+    Record<CartItem['productId'], CartItem['quantity']>
+  >((items, item) => {
+    items[item.productId] = (items[item.productId] ?? 0) + item.quantity;
+    return items;
+  }, {});
 
-  // Add user items
-  for (const item of userCart.items) {
-    mergedItems[item.productId] = (mergedItems[item.productId] ?? 0) + item.quantity;
-  }
-
-  // Add guest items
-  for (const item of guestCart.items) {
-    mergedItems[item.productId] = (mergedItems[item.productId] ?? 0) + item.quantity;
-  }
-
-  // Prepare data for bulk insert
-  const dataForCreateMany = Object.entries(mergedItems).map(([productId, quantity]) => ({
+  const mergedItemsData = Object.entries(mergedItems).map(([productId, quantity]) => ({
     cartId: userCart.id,
     productId: Number(productId),
     quantity,
   }));
 
-  // TODO Transaction
-  await prisma.cartItem.deleteMany({ where: { cartId: userCart.id } });
-  await prisma.cartItem.createMany({ data: dataForCreateMany });
-  await prisma.cart.delete({ where: { id: guestCart.id } });
+  // TODO bulk upsert
+  if (userCart.items.length > 0) {
+    await prisma.cartItem.deleteMany({ where: { cartId: userCart.id } });
+  }
 
+  await prisma.cartItem.createMany({ data: mergedItemsData });
+
+  await prisma.cart.delete({ where: { id: guestCart.id } });
   cookieStore.delete('cartId');
   revalidatePath('/');
 
