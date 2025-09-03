@@ -46,11 +46,30 @@ export async function mergeCarts(userId: string) {
     return items;
   }, {});
 
-  const mergedItemsData = Object.entries(mergedItems).map(([productId, quantity]) => ({
-    cartId: userCart.id,
-    productId: Number(productId),
-    quantity,
-  }));
+  const productIds = Object.keys(mergedItems).map(Number);
+  const products = await prisma.product.findMany({
+    select: { id: true, stock: true },
+    where: { id: { in: productIds } },
+  });
+
+  const productsStock = products.reduce<Record<CartItem['productId'], CartItem['quantity']>>(
+    (stock, product) => {
+      stock[product.id] = product.stock;
+      return stock;
+    },
+    {},
+  );
+
+  const mergedItemsData = Object.entries(mergedItems).map(([productId, quantity]) => {
+    const stock = productsStock[Number(productId)] ?? 0;
+    const newQuantity = Math.min(quantity, stock);
+
+    return {
+      cartId: userCart.id,
+      productId: Number(productId),
+      quantity: newQuantity,
+    };
+  });
 
   // TODO bulk upsert
   if (userCart.items.length > 0) {
@@ -69,22 +88,36 @@ export async function mergeCarts(userId: string) {
 export async function setCartItem(productId: number, quantity: number) {
   const cartId: Cart['id'] = (await findCartId()) ?? (await createCart());
 
-  revalidatePath('/');
-
-  if (quantity === 0) {
+  if (quantity <= 0) {
     await prisma.cartItem.delete({
       where: { cartId_productId: { cartId, productId } },
     });
 
+    revalidatePath('/');
     return { success: true };
+  }
+
+  const product = await prisma.product.findUnique({
+    select: { stock: true },
+    where: { id: productId },
+  });
+
+  if (!product) {
+    return { message: 'Product not found', success: false };
+  }
+
+  if (product.stock < quantity) {
+    return { message: 'Not enough stock available', success: false };
   }
 
   await prisma.cartItem.upsert({
     create: { cartId, productId, quantity },
+    select: { id: true },
     update: { quantity },
     where: { cartId_productId: { cartId, productId } },
   });
 
+  revalidatePath('/');
   return { success: true };
 }
 
