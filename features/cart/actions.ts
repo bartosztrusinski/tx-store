@@ -17,7 +17,7 @@ export async function mergeCarts(userId: string) {
   }
 
   const guestCart = await prisma.cart.findUnique({
-    include: { items: { select: { productId: true, quantity: true } } },
+    include: { items: { select: { createdAt: true, productId: true, quantity: true } } },
     where: { sessionId },
   });
 
@@ -34,16 +34,36 @@ export async function mergeCarts(userId: string) {
 
   const userCart = await prisma.cart.upsert({
     create: { userId },
-    include: { items: { select: { productId: true, quantity: true } } },
+    include: { items: { select: { createdAt: true, productId: true, quantity: true } } },
     update: {},
     where: { userId },
   });
 
   const mergedItems = [...userCart.items, ...guestCart.items].reduce<
-    Record<CartItem['productId'], CartItem['quantity']>
+    Record<CartItem['productId'], Pick<CartItem, 'quantity' | 'createdAt'>>
   >((items, item) => {
-    items[item.productId] = (items[item.productId] ?? 0) + item.quantity;
-    return items;
+    const existingItem = items[item.productId];
+
+    if (!existingItem) {
+      return {
+        ...items,
+        [item.productId]: {
+          createdAt: item.createdAt,
+          quantity: item.quantity,
+        },
+      };
+    }
+
+    const earliestCreatedAt =
+      existingItem.createdAt < item.createdAt ? existingItem.createdAt : item.createdAt;
+
+    return {
+      ...items,
+      [item.productId]: {
+        createdAt: earliestCreatedAt,
+        quantity: existingItem.quantity + item.quantity,
+      },
+    };
   }, {});
 
   const productIds = Object.keys(mergedItems).map(Number);
@@ -60,19 +80,19 @@ export async function mergeCarts(userId: string) {
     {},
   );
 
-  const mergedItemsSql = Object.entries(mergedItems).map(([productId, quantity]) => {
+  const mergedItemsSql = Object.entries(mergedItems).map(([productId, { createdAt, quantity }]) => {
     const stock = productsStock[Number(productId)] ?? 0;
     const clampedQuantity = Math.min(quantity, stock);
 
-    return Prisma.sql`(${userCart.id}, ${productId}, ${clampedQuantity})`;
+    return Prisma.sql`(${userCart.id}, ${productId}, ${clampedQuantity}, ${createdAt})`;
   });
 
   // bulk upsert cart items
   await prisma.$executeRaw`
-    INSERT INTO "CartItem" ("cartId", "productId", "quantity")
+    INSERT INTO "CartItem" ("cartId", "productId", "quantity", "createdAt")
     VALUES ${Prisma.join(mergedItemsSql)}
     ON CONFLICT ("cartId", "productId")
-    DO UPDATE SET "quantity" = EXCLUDED.quantity;
+    DO UPDATE SET "quantity" = EXCLUDED."quantity", "createdAt" = EXCLUDED."createdAt";
   `;
 
   await prisma.cart.delete({ where: { id: guestCart.id } });
