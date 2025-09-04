@@ -1,6 +1,6 @@
 'use server';
 
-import { type Cart, type CartItem } from '@prisma/client';
+import { type Cart, type CartItem, Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { cookies, headers } from 'next/headers';
 import { randomUUID } from 'node:crypto';
@@ -60,23 +60,20 @@ export async function mergeCarts(userId: string) {
     {},
   );
 
-  const mergedItemsData = Object.entries(mergedItems).map(([productId, quantity]) => {
+  const mergedItemsSql = Object.entries(mergedItems).map(([productId, quantity]) => {
     const stock = productsStock[Number(productId)] ?? 0;
-    const newQuantity = Math.min(quantity, stock);
+    const clampedQuantity = Math.min(quantity, stock);
 
-    return {
-      cartId: userCart.id,
-      productId: Number(productId),
-      quantity: newQuantity,
-    };
+    return Prisma.sql`(${userCart.id}, ${productId}, ${clampedQuantity})`;
   });
 
-  // TODO bulk upsert
-  if (userCart.items.length > 0) {
-    await prisma.cartItem.deleteMany({ where: { cartId: userCart.id } });
-  }
-
-  await prisma.cartItem.createMany({ data: mergedItemsData });
+  // bulk upsert cart items
+  await prisma.$executeRaw`
+    INSERT INTO "CartItem" ("cartId", "productId", "quantity")
+    VALUES ${Prisma.join(mergedItemsSql)}
+    ON CONFLICT ("cartId", "productId")
+    DO UPDATE SET "quantity" = EXCLUDED.quantity;
+  `;
 
   await prisma.cart.delete({ where: { id: guestCart.id } });
   cookieStore.delete('cartId');
