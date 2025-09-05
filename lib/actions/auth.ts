@@ -3,6 +3,7 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+import { mergeCarts } from '@/features/cart/actions';
 import { auth } from '@/lib/auth';
 import { loginSchema, registerSchema } from '@/lib/schemas/auth';
 import { type ActionResponse } from '@/lib/types';
@@ -25,7 +26,10 @@ export async function logIn(
   const { callbackUrl, email, password } = validationResult.data;
 
   try {
-    await auth.api.signInEmail({ body: { email, password } });
+    const { user } = await auth.api.signInEmail({
+      body: { email, password },
+    });
+    await mergeCarts(user.id);
   } catch (error) {
     return {
       isSuccess: false,
@@ -61,9 +65,10 @@ export async function register(
   const { callbackUrl, email, name, password } = validationResult.data;
 
   try {
-    await auth.api.signUpEmail({
+    const { user } = await auth.api.signUpEmail({
       body: { email, name, password },
     });
+    await mergeCarts(user.id);
   } catch (error) {
     return {
       isSuccess: false,
