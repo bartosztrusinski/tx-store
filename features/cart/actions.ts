@@ -7,13 +7,14 @@ import { randomUUID } from 'node:crypto';
 
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { type ActionResponse } from '@/lib/types';
 
-export async function mergeCarts(userId: string) {
+export async function mergeCarts(userId: string): Promise<ActionResponse> {
   const cookieStore = await cookies();
   const sessionId = cookieStore.get('cartId')?.value;
 
   if (!sessionId) {
-    return { success: true };
+    return { isSuccess: true };
   }
 
   const guestCart = await prisma.cart.findUnique({
@@ -23,13 +24,13 @@ export async function mergeCarts(userId: string) {
 
   if (!guestCart) {
     cookieStore.delete('cartId');
-    return { success: true };
+    return { isSuccess: true };
   }
 
   if (guestCart.items.length === 0) {
     await prisma.cart.delete({ where: { id: guestCart.id } });
     cookieStore.delete('cartId');
-    return { success: true };
+    return { isSuccess: true };
   }
 
   const userCart = await prisma.cart.upsert({
@@ -99,10 +100,10 @@ export async function mergeCarts(userId: string) {
   cookieStore.delete('cartId');
   revalidatePath('/');
 
-  return { success: true };
+  return { isSuccess: true };
 }
 
-export async function setCartItem(productId: number, quantity: number) {
+export async function setCartItem(productId: number, quantity: number): Promise<ActionResponse> {
   const cartId: Cart['id'] = (await findCartId()) ?? (await createCart());
 
   if (quantity <= 0) {
@@ -111,7 +112,7 @@ export async function setCartItem(productId: number, quantity: number) {
     });
 
     revalidatePath('/');
-    return { success: true };
+    return { isSuccess: true };
   }
 
   const product = await prisma.product.findUnique({
@@ -120,11 +121,11 @@ export async function setCartItem(productId: number, quantity: number) {
   });
 
   if (!product) {
-    return { message: 'Product not found', success: false };
+    return { isSuccess: false, message: 'Product not found' };
   }
 
   if (product.stock < quantity) {
-    return { message: 'Not enough stock available', success: false };
+    return { isSuccess: false, message: 'Not enough stock available' };
   }
 
   await prisma.cartItem.upsert({
@@ -135,7 +136,7 @@ export async function setCartItem(productId: number, quantity: number) {
   });
 
   revalidatePath('/');
-  return { success: true };
+  return { isSuccess: true };
 }
 
 async function createCart(): Promise<Cart['id']> {
