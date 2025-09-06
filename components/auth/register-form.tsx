@@ -29,12 +29,12 @@ export function RegisterForm({ callbackUrl }: Props) {
           placeholder='john@doe.com'
           type='email'
         />
-        <FieldErrors errors={state.errors?.email} />
+        <FieldErrors errors={state.fieldErrors?.email} />
       </div>
       <div className='flex flex-col gap-1'>
         <Label htmlFor={`${id}-name`}>Name</Label>
         <Input autoComplete='name' id={`${id}-name`} name='name' placeholder='John Doe' />
-        <FieldErrors errors={state.errors?.name} />
+        <FieldErrors errors={state.fieldErrors?.name} />
       </div>
       <div className='flex flex-col gap-1'>
         <Label htmlFor={`${id}-password`}>Password</Label>
@@ -45,7 +45,7 @@ export function RegisterForm({ callbackUrl }: Props) {
           placeholder='********'
           type='password'
         />
-        <FieldErrors errors={state.errors?.password} />
+        <FieldErrors errors={state.fieldErrors?.password} />
       </div>
       <div className='flex flex-col gap-1'>
         <Label htmlFor={`${id}-confirmPassword`}>Repeat Password</Label>
@@ -56,11 +56,11 @@ export function RegisterForm({ callbackUrl }: Props) {
           placeholder='********'
           type='password'
         />
-        <FieldErrors errors={state.errors?.confirmPassword} />
+        <FieldErrors errors={state.fieldErrors?.confirmPassword} />
       </div>
 
       <input name='callbackUrl' type='hidden' value={callbackUrl} />
-      <FieldErrors errors={state?.errors?.callbackUrl} />
+      <FieldErrors errors={state?.fieldErrors?.callbackUrl} />
 
       {state?.message && (
         <Alert message={state.message} variant={state.isSuccess ? 'success' : 'error'} />
