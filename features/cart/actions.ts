@@ -6,7 +6,7 @@ import { cookies, headers } from 'next/headers';
 import { randomUUID } from 'node:crypto';
 
 import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { dbClientHttp } from '@/lib/prisma';
 import { type ActionResponse } from '@/lib/types';
 
 export async function mergeCarts(userId: string): Promise<ActionResponse> {
@@ -17,7 +17,7 @@ export async function mergeCarts(userId: string): Promise<ActionResponse> {
     return { isSuccess: true };
   }
 
-  const guestCart = await prisma.cart.findUnique({
+  const guestCart = await dbClientHttp.cart.findUnique({
     include: { items: { select: { createdAt: true, productId: true, quantity: true } } },
     where: { sessionId },
   });
@@ -28,12 +28,12 @@ export async function mergeCarts(userId: string): Promise<ActionResponse> {
   }
 
   if (guestCart.items.length === 0) {
-    await prisma.cart.delete({ where: { id: guestCart.id } });
+    await dbClientHttp.cart.delete({ where: { id: guestCart.id } });
     cookieStore.delete('cartId');
     return { isSuccess: true };
   }
 
-  const userCart = await prisma.cart.upsert({
+  const userCart = await dbClientHttp.cart.upsert({
     create: { userId },
     include: { items: { select: { createdAt: true, productId: true, quantity: true } } },
     update: {},
@@ -68,7 +68,7 @@ export async function mergeCarts(userId: string): Promise<ActionResponse> {
   }, {});
 
   const productIds = Object.keys(mergedItems).map(Number);
-  const products = await prisma.product.findMany({
+  const products = await dbClientHttp.product.findMany({
     select: { id: true, stock: true },
     where: { id: { in: productIds } },
   });
@@ -89,14 +89,14 @@ export async function mergeCarts(userId: string): Promise<ActionResponse> {
   });
 
   // bulk upsert cart items
-  await prisma.$executeRaw`
+  await dbClientHttp.$executeRaw`
     INSERT INTO "CartItem" ("cartId", "productId", "quantity", "createdAt")
     VALUES ${Prisma.join(mergedItemsSql)}
     ON CONFLICT ("cartId", "productId")
     DO UPDATE SET "quantity" = EXCLUDED."quantity", "createdAt" = EXCLUDED."createdAt";
   `;
 
-  await prisma.cart.delete({ where: { id: guestCart.id } });
+  await dbClientHttp.cart.delete({ where: { id: guestCart.id } });
   cookieStore.delete('cartId');
   revalidatePath('/');
 
@@ -107,7 +107,7 @@ export async function setCartItem(productId: number, quantity: number): Promise<
   const cartId: Cart['id'] = (await findCartId()) ?? (await createCart());
 
   if (quantity <= 0) {
-    await prisma.cartItem.delete({
+    await dbClientHttp.cartItem.delete({
       where: { cartId_productId: { cartId, productId } },
     });
 
@@ -115,7 +115,7 @@ export async function setCartItem(productId: number, quantity: number): Promise<
     return { isSuccess: true };
   }
 
-  const product = await prisma.product.findUnique({
+  const product = await dbClientHttp.product.findUnique({
     select: { stock: true },
     where: { id: productId },
   });
@@ -128,7 +128,7 @@ export async function setCartItem(productId: number, quantity: number): Promise<
     return { isSuccess: false, message: 'Not enough stock available' };
   }
 
-  await prisma.cartItem.upsert({
+  await dbClientHttp.cartItem.upsert({
     create: { cartId, productId, quantity },
     select: { id: true },
     update: { quantity },
@@ -153,7 +153,7 @@ async function createCart(): Promise<Cart['id']> {
 async function createGuestCart(): Promise<Cart['id']> {
   const sessionId = randomUUID();
   const cookieStore = await cookies();
-  const newCart = await prisma.cart.create({
+  const newCart = await dbClientHttp.cart.create({
     data: { sessionId },
   });
 
@@ -167,7 +167,7 @@ async function createGuestCart(): Promise<Cart['id']> {
 }
 
 async function createUserCart(userId: Cart['userId']): Promise<Cart['id']> {
-  const newCart = await prisma.cart.create({
+  const newCart = await dbClientHttp.cart.create({
     data: { userId },
   });
 
@@ -192,7 +192,7 @@ async function findCartId(): Promise<Cart['id'] | null> {
 }
 
 async function findGuestCartId(sessionId: string): Promise<Cart['id'] | null> {
-  const cart = await prisma.cart.findUnique({
+  const cart = await dbClientHttp.cart.findUnique({
     select: { id: true },
     where: { sessionId },
   });
@@ -201,7 +201,7 @@ async function findGuestCartId(sessionId: string): Promise<Cart['id'] | null> {
 }
 
 async function findUserCartId(userId: string): Promise<Cart['id'] | null> {
-  const cart = await prisma.cart.findUnique({
+  const cart = await dbClientHttp.cart.findUnique({
     select: { id: true },
     where: { userId },
   });

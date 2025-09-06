@@ -3,7 +3,7 @@ import { cookies, headers } from 'next/headers';
 
 import { AddToCartControl } from '@/features/cart/components/add-to-cart-control';
 import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { dbClientHttp } from '@/lib/prisma';
 
 type Props = {
   productId: Product['id'];
@@ -32,7 +32,7 @@ async function getCartItemQuantity(productId: number): Promise<CartItem['quantit
     return null;
   }
 
-  const cartItem = await prisma.cartItem.findFirst({
+  const cartItem = await dbClientHttp.cartItem.findFirst({
     select: { quantity: true },
     where: {
       cart: userId ? { userId } : { sessionId },

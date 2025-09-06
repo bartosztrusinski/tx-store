@@ -1,17 +1,25 @@
 import { neonConfig } from '@neondatabase/serverless';
-import { PrismaNeon } from '@prisma/adapter-neon';
+import { PrismaNeon, PrismaNeonHTTP } from '@prisma/adapter-neon';
 import { PrismaClient } from '@prisma/client';
 
 declare global {
-  var prisma: PrismaClient | undefined;
+  var dbClientWs: PrismaClient | undefined;
+  var dbClientHttp: PrismaClient | undefined;
 }
 
 neonConfig.poolQueryViaFetch = true;
 
 const connectionString = `${process.env.DB_URL}`;
-const adapter = new PrismaNeon({ connectionString });
-const prisma = global.prisma ?? new PrismaClient({ adapter });
 
-if (process.env.NODE_ENV === 'development') global.prisma = prisma;
+const adapterWs = new PrismaNeon({ connectionString });
+const dbClientWs = global.dbClientWs ?? new PrismaClient({ adapter: adapterWs });
 
-export { prisma };
+const adapterHttp = new PrismaNeonHTTP(connectionString, {});
+const dbClientHttp = global.dbClientHttp ?? new PrismaClient({ adapter: adapterHttp });
+
+if (process.env.NODE_ENV === 'development') {
+  global.dbClientWs = dbClientWs;
+  global.dbClientHttp = dbClientHttp;
+}
+
+export { dbClientHttp, dbClientWs };
