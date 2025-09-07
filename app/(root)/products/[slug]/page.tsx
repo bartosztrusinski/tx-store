@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 
 import { ProductDetail } from '@/components/product/product-detail';
-import { getProductBySlug } from '@/lib/actions/product';
+import { getProductBySlug } from '@/features/product/data';
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

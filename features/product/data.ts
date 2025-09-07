@@ -1,5 +1,3 @@
-'use server';
-
 import { type Product } from '@prisma/client';
 
 import { LATEST_PRODUCTS_LIMIT } from '@/lib/constants';
