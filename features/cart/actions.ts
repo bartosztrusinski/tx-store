@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { cookies, headers } from 'next/headers';
 import { randomUUID } from 'node:crypto';
 
+import { getCartId } from '@/features/cart/data';
 import { auth } from '@/lib/auth';
 import { dbClientHttp } from '@/lib/prisma';
 import { type ActionResponse } from '@/lib/types';
@@ -104,7 +105,7 @@ export async function mergeCarts(userId: string): Promise<ActionResponse> {
 }
 
 export async function setCartItem(productId: number, quantity: number): Promise<ActionResponse> {
-  const cartId: Cart['id'] = (await findCartId()) ?? (await createCart());
+  const cartId: Cart['id'] = (await getCartId()) ?? (await createCart());
 
   if (quantity <= 0) {
     await dbClientHttp.cartItem.delete({
@@ -172,39 +173,4 @@ async function createUserCart(userId: Cart['userId']): Promise<Cart['id']> {
   });
 
   return newCart.id;
-}
-
-async function findCartId(): Promise<Cart['id'] | null> {
-  const session = await auth.api.getSession({ headers: await headers() });
-  const userId = session?.user.id;
-  const cookieStore = await cookies();
-  const sessionId = cookieStore.get('cartId')?.value;
-
-  if (userId) {
-    return await findUserCartId(userId);
-  }
-
-  if (sessionId) {
-    return await findGuestCartId(sessionId);
-  }
-
-  return null;
-}
-
-async function findGuestCartId(sessionId: string): Promise<Cart['id'] | null> {
-  const cart = await dbClientHttp.cart.findUnique({
-    select: { id: true },
-    where: { sessionId },
-  });
-
-  return cart?.id ?? null;
-}
-
-async function findUserCartId(userId: string): Promise<Cart['id'] | null> {
-  const cart = await dbClientHttp.cart.findUnique({
-    select: { id: true },
-    where: { userId },
-  });
-
-  return cart?.id ?? null;
 }

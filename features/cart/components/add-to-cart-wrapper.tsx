@@ -1,9 +1,7 @@
-import { type CartItem, type Product } from '@prisma/client';
-import { cookies, headers } from 'next/headers';
+import { type Product } from '@prisma/client';
 
 import { AddToCartControl } from '@/features/cart/components/add-to-cart-control';
-import { auth } from '@/lib/auth';
-import { dbClientHttp } from '@/lib/prisma';
+import { getCartItemQuantity } from '@/features/cart/data';
 
 type Props = {
   productId: Product['id'];
@@ -20,25 +18,4 @@ export async function AddToCartWrapper({ productId, productStock }: Props) {
       productStock={productStock}
     />
   );
-}
-
-async function getCartItemQuantity(productId: number): Promise<CartItem['quantity'] | null> {
-  const session = await auth.api.getSession({ headers: await headers() });
-  const userId = session?.user.id;
-  const cookieStore = await cookies();
-  const sessionId = cookieStore.get('cartId')?.value;
-
-  if (!userId && !sessionId) {
-    return null;
-  }
-
-  const cartItem = await dbClientHttp.cartItem.findFirst({
-    select: { quantity: true },
-    where: {
-      cart: userId ? { userId } : { sessionId },
-      productId,
-    },
-  });
-
-  return cartItem?.quantity ?? null;
 }
