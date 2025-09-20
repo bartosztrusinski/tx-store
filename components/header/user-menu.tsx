@@ -25,7 +25,7 @@ export function UserMenu({ email, image, name }: Props) {
       <DropdownMenuTrigger>
         <Avatar className='transition-transform will-change-transform hover:scale-105'>
           <AvatarImage alt={`Avatar of ${name}`} src={image ?? undefined} />
-          <AvatarFallback>{name[0].toUpperCase()}</AvatarFallback>
+          <AvatarFallback>{name[0]?.toUpperCase()}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end' className='w-48'>
