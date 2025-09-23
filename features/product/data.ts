@@ -15,3 +15,10 @@ export async function getProductBySlug(slug: Product['slug']): Promise<Product |
     where: { slug },
   });
 }
+
+export async function getProductStock(productId: Product['id']) {
+  return await dbClientHttp.product.findUnique({
+    select: { stock: true },
+    where: { id: productId },
+  });
+}
