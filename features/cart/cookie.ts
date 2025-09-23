@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 
-const COOKIE_KEY = 'tx-cart';
+const COOKIE_KEY = 'cart-session-id';
 const MAX_AGE = 60 * 60 * 24 * 30;
 
 export async function deleteCartCookie() {
