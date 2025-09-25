@@ -1,4 +1,5 @@
 import { LogIn, ShoppingCart } from 'lucide-react';
+import { ThemeProvider } from 'next-themes';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 
@@ -14,7 +15,7 @@ export async function HeaderActions() {
   const session = await auth.api.getSession({ headers: await headers() });
 
   return (
-    <>
+    <ThemeProvider attribute='class' defaultTheme='system' disableTransitionOnChange enableSystem>
       <nav aria-label='User actions' className='hidden sm:block'>
         <ul className='flex items-center gap-2' role='menubar'>
           <li>
@@ -40,6 +41,6 @@ export async function HeaderActions() {
       <div className='sm:hidden'>
         <HeaderActionsDrawer />
       </div>
-    </>
+    </ThemeProvider>
   );
 }

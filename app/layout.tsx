@@ -2,7 +2,6 @@ import { type Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { type ReactNode } from 'react';
 
-import { ThemeProvider } from '@/components/theme-provider';
 import { APP_DESCRIPTION, APP_NAME, SERVER_URL } from '@/lib/constants';
 
 import './globals.css';
@@ -33,16 +32,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       lang='en'
       suppressHydrationWarning
     >
-      <body>
-        <ThemeProvider
-          attribute='class'
-          defaultTheme='system'
-          disableTransitionOnChange
-          enableSystem
-        >
-          {children}
-        </ThemeProvider>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
