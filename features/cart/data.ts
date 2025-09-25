@@ -1,18 +1,26 @@
 import { type Cart, type CartItem, Prisma } from '@prisma/client';
 import { headers } from 'next/headers';
+import { randomUUID } from 'node:crypto';
 
 import { auth } from '@/lib/auth';
 import { db, dbPool } from '@/lib/db';
 
-import { getCartCookie } from './cookie';
+import { deleteCartCookie, getCartCookie, setCartCookie } from './cookie';
 
-export async function createGuestCart(sessionId: Cart['sessionId']): Promise<Cart['id']> {
-  const { id } = await db.cart.create({
-    data: { sessionId },
-    select: { id: true },
-  });
+export async function createCart(): Promise<Cart['id']> {
+  const session = await auth.api.getSession({ headers: await headers() });
+  const userId = session?.user.id;
 
-  return id;
+  if (userId) {
+    const cartId = await createUserCart(userId);
+    return cartId;
+  }
+
+  const sessionId = randomUUID();
+  const cartId = await createGuestCart(sessionId);
+  await setCartCookie(sessionId);
+
+  return cartId;
 }
 
 export async function createOrGetUserCartWithItems(userId: NonNullable<Cart['userId']>) {
@@ -32,29 +40,17 @@ export async function createOrGetUserCartWithItems(userId: NonNullable<Cart['use
   });
 }
 
-export async function createUserCart(userId: Cart['userId']): Promise<Cart['id']> {
-  const { id } = await db.cart.create({
-    data: { userId },
-    select: { id: true },
-  });
-
-  return id;
-}
-
-export async function deleteCart(cartId: Cart['id']): Promise<void> {
+export async function deleteCart(cartId: Cart['id']) {
   await db.cart.delete({ where: { id: cartId } });
 }
 
-export async function deleteCartItem(
-  cartId: CartItem['cartId'],
-  productId: CartItem['productId'],
-): Promise<void> {
+export async function deleteCartItem(cartId: CartItem['cartId'], productId: CartItem['productId']) {
   await db.cartItem.delete({
     where: { cartId_productId: { cartId, productId } },
   });
 }
 
-export async function getCartId(): Promise<Cart['id'] | null> {
+export async function getCartId() {
   const session = await auth.api.getSession({ headers: await headers() });
   const userId = session?.user.id;
   const sessionId = await getCartCookie();
@@ -71,9 +67,7 @@ export async function getCartId(): Promise<Cart['id'] | null> {
   return cart?.id ?? null;
 }
 
-export async function getCartItemQuantity(
-  productId: CartItem['productId'],
-): Promise<CartItem['quantity'] | null> {
+export async function getCartItemQuantity(productId: CartItem['productId']) {
   const session = await auth.api.getSession({ headers: await headers() });
   const userId = session?.user.id;
   const sessionId = await getCartCookie();
@@ -108,11 +102,65 @@ export async function getGuestCartWithItems(sessionId: NonNullable<Cart['session
   });
 }
 
+export async function mergeUserAndGuestCarts(userId: NonNullable<Cart['userId']>) {
+  const sessionId = await getCartCookie();
+
+  if (!sessionId) {
+    return { isSuccess: true };
+  }
+
+  const guestCart = await getGuestCartWithItems(sessionId);
+
+  if (!guestCart) {
+    await deleteCartCookie();
+    return { isSuccess: true };
+  }
+
+  if (guestCart.items.length === 0) {
+    await deleteCart(guestCart.id);
+    await deleteCartCookie();
+    return { isSuccess: true };
+  }
+
+  const userCart = await createOrGetUserCartWithItems(userId);
+  const mergedCartItems = Object.values(
+    [...userCart.items, ...guestCart.items].reduce<
+      Record<CartItem['productId'], Omit<CartItem, 'id'>>
+    >((items, item) => {
+      const existingItem = items[item.product.id];
+      const clampedQuantity = Math.min(
+        item.quantity + (existingItem?.quantity ?? 0),
+        item.product.stock,
+      );
+      const earliestCreatedAt =
+        existingItem && existingItem.createdAt < item.createdAt ?
+          existingItem.createdAt
+        : item.createdAt;
+
+      return {
+        ...items,
+        [item.product.id]: {
+          cartId: userCart.id,
+          createdAt: earliestCreatedAt,
+          productId: item.product.id,
+          quantity: clampedQuantity,
+        },
+      };
+    }, {}),
+  );
+
+  await upsertCartItems(mergedCartItems);
+  await deleteCart(guestCart.id);
+  await deleteCartCookie();
+
+  return { isSuccess: true };
+}
+
 export async function upsertCartItem(
   cartId: CartItem['cartId'],
   productId: CartItem['productId'],
   quantity: CartItem['quantity'],
-): Promise<void> {
+) {
   await db.cartItem.upsert({
     create: { cartId, productId, quantity },
     update: { quantity },
@@ -132,4 +180,22 @@ export async function upsertCartItems(items: Omit<CartItem, 'id'>[]) {
       ON CONFLICT ("cartId", "productId")
       DO UPDATE SET "quantity" = EXCLUDED."quantity", "createdAt" = EXCLUDED."createdAt";
     `;
+}
+
+async function createGuestCart(sessionId: Cart['sessionId']): Promise<Cart['id']> {
+  const { id } = await db.cart.create({
+    data: { sessionId },
+    select: { id: true },
+  });
+
+  return id;
+}
+
+async function createUserCart(userId: Cart['userId']): Promise<Cart['id']> {
+  const { id } = await db.cart.create({
+    data: { userId },
+    select: { id: true },
+  });
+
+  return id;
 }

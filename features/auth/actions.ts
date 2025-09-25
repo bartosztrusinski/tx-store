@@ -1,9 +1,10 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-import { mergeCarts } from '@/features/cart/actions';
+import { mergeUserAndGuestCarts } from '@/features/cart/data';
 import { auth } from '@/lib/auth';
 import { type ActionResponse } from '@/lib/types';
 
@@ -32,7 +33,8 @@ export async function logIn(
     const { user } = await auth.api.signInEmail({
       body: { email, password },
     });
-    await mergeCarts(user.id);
+    await mergeUserAndGuestCarts(user.id);
+    revalidatePath('/');
   } catch (error) {
     return {
       isSuccess: false,
@@ -73,7 +75,8 @@ export async function register(
     const { user } = await auth.api.signUpEmail({
       body: { email, name, password },
     });
-    await mergeCarts(user.id);
+    await mergeUserAndGuestCarts(user.id);
+    revalidatePath('/');
   } catch (error) {
     return {
       isSuccess: false,
