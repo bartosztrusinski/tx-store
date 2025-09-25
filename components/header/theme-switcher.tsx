@@ -41,12 +41,16 @@ export function ThemeSwitcher({ withText = false }: Props) {
     setIsMounted(true);
   }, []);
 
+  if (!isMounted) {
+    return <div className='size-10'></div>;
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button className='flex' size={withText ? 'default' : 'icon'} variant='ghost'>
           {withText && label}
-          {isMounted && <Icon className='h-[1.2rem] w-[1.2rem]' />}
+          <Icon />
           <span className='sr-only'>Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
