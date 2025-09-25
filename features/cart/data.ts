@@ -2,12 +2,12 @@ import { type Cart, type CartItem, Prisma } from '@prisma/client';
 import { headers } from 'next/headers';
 
 import { auth } from '@/lib/auth';
-import { dbClientHttp, dbClientWs } from '@/lib/prisma';
+import { db, dbPool } from '@/lib/db';
 
 import { getCartCookie } from './cookie';
 
 export async function createGuestCart(sessionId: Cart['sessionId']): Promise<Cart['id']> {
-  const { id } = await dbClientHttp.cart.create({
+  const { id } = await db.cart.create({
     data: { sessionId },
     select: { id: true },
   });
@@ -16,7 +16,7 @@ export async function createGuestCart(sessionId: Cart['sessionId']): Promise<Car
 }
 
 export async function createOrGetUserCartWithItems(userId: NonNullable<Cart['userId']>) {
-  return await dbClientWs.cart.upsert({
+  return await dbPool.cart.upsert({
     create: { userId },
     include: {
       items: {
@@ -33,7 +33,7 @@ export async function createOrGetUserCartWithItems(userId: NonNullable<Cart['use
 }
 
 export async function createUserCart(userId: Cart['userId']): Promise<Cart['id']> {
-  const { id } = await dbClientHttp.cart.create({
+  const { id } = await db.cart.create({
     data: { userId },
     select: { id: true },
   });
@@ -42,14 +42,14 @@ export async function createUserCart(userId: Cart['userId']): Promise<Cart['id']
 }
 
 export async function deleteCart(cartId: Cart['id']): Promise<void> {
-  await dbClientHttp.cart.delete({ where: { id: cartId } });
+  await db.cart.delete({ where: { id: cartId } });
 }
 
 export async function deleteCartItem(
   cartId: CartItem['cartId'],
   productId: CartItem['productId'],
 ): Promise<void> {
-  await dbClientHttp.cartItem.delete({
+  await db.cartItem.delete({
     where: { cartId_productId: { cartId, productId } },
   });
 }
@@ -63,7 +63,7 @@ export async function getCartId(): Promise<Cart['id'] | null> {
     return null;
   }
 
-  const cart = await dbClientHttp.cart.findUnique({
+  const cart = await db.cart.findUnique({
     select: { id: true },
     where: userId ? { userId } : { sessionId: sessionId! },
   });
@@ -82,7 +82,7 @@ export async function getCartItemQuantity(
     return null;
   }
 
-  const cartItem = await dbClientHttp.cartItem.findFirst({
+  const cartItem = await db.cartItem.findFirst({
     select: { quantity: true },
     where: {
       cart: userId ? { userId } : { sessionId },
@@ -94,7 +94,7 @@ export async function getCartItemQuantity(
 }
 
 export async function getGuestCartWithItems(sessionId: NonNullable<Cart['sessionId']>) {
-  return await dbClientHttp.cart.findUnique({
+  return await db.cart.findUnique({
     include: {
       items: {
         select: {
@@ -113,7 +113,7 @@ export async function upsertCartItem(
   productId: CartItem['productId'],
   quantity: CartItem['quantity'],
 ): Promise<void> {
-  await dbClientHttp.cartItem.upsert({
+  await db.cartItem.upsert({
     create: { cartId, productId, quantity },
     update: { quantity },
     where: { cartId_productId: { cartId, productId } },
@@ -121,7 +121,7 @@ export async function upsertCartItem(
 }
 
 export async function upsertCartItems(items: Omit<CartItem, 'id'>[]) {
-  return await dbClientHttp.$executeRaw`
+  return await db.$executeRaw`
       INSERT INTO "CartItem" ("cartId", "createdAt", "productId", "quantity")
       VALUES ${Prisma.join(
         items.map(
