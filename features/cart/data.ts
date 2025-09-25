@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 
 import { getCartCookie } from '@/features/cart/cookie';
 import { auth } from '@/lib/auth';
-import { dbClientHttp } from '@/lib/prisma';
+import { dbClientHttp, dbClientWs } from '@/lib/prisma';
 
 export async function createGuestCart(sessionId: Cart['sessionId']): Promise<Cart['id']> {
   const { id } = await dbClientHttp.cart.create({
@@ -15,7 +15,7 @@ export async function createGuestCart(sessionId: Cart['sessionId']): Promise<Car
 }
 
 export async function createOrGetUserCartWithItems(userId: NonNullable<Cart['userId']>) {
-  return await dbClientHttp.cart.upsert({
+  return await dbClientWs.cart.upsert({
     create: { userId },
     include: {
       items: {
