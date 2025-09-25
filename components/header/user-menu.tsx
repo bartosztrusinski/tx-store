@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { logOut } from '@/lib/actions/auth';
+import { logOut } from '@/features/auth/actions';
 
 type Props = {
   email: string;

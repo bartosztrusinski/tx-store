@@ -1,4 +1,4 @@
-import { ProductList } from '@/components/product/product-list';
+import { ProductList } from '@/features/product/components/product-list';
 import { getLatestProducts } from '@/features/product/data';
 
 export default async function HomePage() {

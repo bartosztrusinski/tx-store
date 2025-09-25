@@ -6,16 +6,16 @@ import { Alert } from '@/components/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { logIn } from '@/lib/actions/auth';
 
+import { register } from '../actions';
 import { FieldErrors } from './field-errors';
 
 type Props = {
   callbackUrl: string;
 };
 
-export function LoginForm({ callbackUrl }: Props) {
-  const [state, action, isPending] = useActionState(logIn, { isSuccess: false });
+export function RegisterForm({ callbackUrl }: Props) {
+  const [state, action, isPending] = useActionState(register, { isSuccess: false });
   const id = useId();
 
   return (
@@ -29,18 +29,34 @@ export function LoginForm({ callbackUrl }: Props) {
           placeholder='john@doe.com'
           type='email'
         />
-        <FieldErrors errors={state?.fieldErrors?.email} />
+        <FieldErrors errors={state.fieldErrors?.email} />
+      </div>
+      <div className='flex flex-col gap-1'>
+        <Label htmlFor={`${id}-name`}>Name</Label>
+        <Input autoComplete='name' id={`${id}-name`} name='name' placeholder='John Doe' />
+        <FieldErrors errors={state.fieldErrors?.name} />
       </div>
       <div className='flex flex-col gap-1'>
         <Label htmlFor={`${id}-password`}>Password</Label>
         <Input
-          autoComplete='current-password'
+          autoComplete='new-password'
           id={`${id}-password`}
           name='password'
           placeholder='********'
           type='password'
         />
-        <FieldErrors errors={state?.fieldErrors?.password} />
+        <FieldErrors errors={state.fieldErrors?.password} />
+      </div>
+      <div className='flex flex-col gap-1'>
+        <Label htmlFor={`${id}-confirmPassword`}>Repeat Password</Label>
+        <Input
+          autoComplete='new-password'
+          id={`${id}-confirmPassword`}
+          name='confirmPassword'
+          placeholder='********'
+          type='password'
+        />
+        <FieldErrors errors={state.fieldErrors?.confirmPassword} />
       </div>
 
       <input name='callbackUrl' type='hidden' value={callbackUrl} />
@@ -51,7 +67,7 @@ export function LoginForm({ callbackUrl }: Props) {
       )}
 
       <Button className='mt-2' disabled={isPending} type='submit'>
-        {isPending ? 'Submitting...' : 'Log In'}
+        {isPending ? 'Submitting...' : 'Sign Up'}
       </Button>
     </form>
   );

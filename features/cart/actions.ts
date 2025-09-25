@@ -5,7 +5,11 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { randomUUID } from 'node:crypto';
 
-import { deleteCartCookie, getCartCookie, setCartCookie } from '@/features/cart/cookie';
+import { getProductStock } from '@/features/product/data';
+import { auth } from '@/lib/auth';
+import { type ActionResponse } from '@/lib/types';
+
+import { deleteCartCookie, getCartCookie, setCartCookie } from './cookie';
 import {
   createGuestCart,
   createOrGetUserCartWithItems,
@@ -16,10 +20,7 @@ import {
   getGuestCartWithItems,
   upsertCartItem,
   upsertCartItems,
-} from '@/features/cart/data';
-import { getProductStock } from '@/features/product/data';
-import { auth } from '@/lib/auth';
-import { type ActionResponse } from '@/lib/types';
+} from './data';
 
 export async function mergeCarts(userId: string): Promise<ActionResponse> {
   const sessionId = await getCartCookie();

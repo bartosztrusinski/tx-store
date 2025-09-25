@@ -1,9 +1,10 @@
 import { type Cart, type CartItem, Prisma } from '@prisma/client';
 import { headers } from 'next/headers';
 
-import { getCartCookie } from '@/features/cart/cookie';
 import { auth } from '@/lib/auth';
 import { dbClientHttp, dbClientWs } from '@/lib/prisma';
+
+import { getCartCookie } from './cookie';
 
 export async function createGuestCart(sessionId: Cart['sessionId']): Promise<Cart['id']> {
   const { id } = await dbClientHttp.cart.create({

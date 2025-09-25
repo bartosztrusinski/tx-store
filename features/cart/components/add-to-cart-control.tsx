@@ -4,8 +4,8 @@ import { type Product } from '@prisma/client';
 import { startTransition, useOptimistic } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { setCartItem } from '@/features/cart/actions';
 
+import { setCartItem } from '../actions';
 import { QuantityStepper } from './quantity-stepper';
 
 type Props = {

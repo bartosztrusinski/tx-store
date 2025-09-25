@@ -5,8 +5,9 @@ import { redirect } from 'next/navigation';
 
 import { mergeCarts } from '@/features/cart/actions';
 import { auth } from '@/lib/auth';
-import { loginSchema, registerSchema } from '@/lib/schemas/auth';
 import { type ActionResponse } from '@/lib/types';
+
+import { loginSchema, registerSchema } from './schemas';
 
 export async function logIn(
   _: ActionResponse<typeof loginSchema>,

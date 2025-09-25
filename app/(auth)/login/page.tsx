@@ -4,8 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-import { LoginForm } from '@/components/auth/login-form';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { LoginForm } from '@/features/auth/components/login-form';
 import { auth } from '@/lib/auth';
 import { APP_NAME } from '@/lib/constants';
 

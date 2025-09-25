@@ -19,18 +19,22 @@ type Props = {
 };
 
 export function ProductCard({ product }: Props) {
+  const firstImage = product.images[0];
+
   return (
     <Card>
       <CardContent className='rounded-t-lg border-b p-0'>
         <Link href={`/products/${product.slug}`}>
-          <Image
-            alt={product.name}
-            className='w-full rounded-t-lg'
-            height={300}
-            priority
-            src={product.images[0]}
-            width={300}
-          />
+          {firstImage && (
+            <Image
+              alt={product.name}
+              className='w-full rounded-t-lg'
+              height={300}
+              priority
+              src={firstImage}
+              width={300}
+            />
+          )}
         </Link>
       </CardContent>
       <CardHeader className='px-3 py-2'>

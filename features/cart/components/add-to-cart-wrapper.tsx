@@ -1,7 +1,7 @@
 import { type Product } from '@prisma/client';
 
-import { AddToCartControl } from '@/features/cart/components/add-to-cart-control';
-import { getCartItemQuantity } from '@/features/cart/data';
+import { getCartItemQuantity } from '../data';
+import { AddToCartControl } from './add-to-cart-control';
 
 type Props = {
   productId: Product['id'];

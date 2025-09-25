@@ -4,8 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-import { RegisterForm } from '@/components/auth/register-form';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { RegisterForm } from '@/features/auth/components/register-form';
 import { auth } from '@/lib/auth';
 import { APP_NAME } from '@/lib/constants';
 
