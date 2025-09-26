@@ -1,12 +1,11 @@
 import { ArrowLeftCircle } from 'lucide-react';
-import { headers } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { LoginForm } from '@/features/auth/components/login-form';
-import { auth } from '@/lib/auth';
+import { getSession } from '@/lib/auth';
 import { APP_NAME } from '@/lib/constants';
 
 type Props = {
@@ -16,7 +15,7 @@ type Props = {
 const DEFAULT_CALLBACK_URL = '/';
 
 export default async function LoginPage({ searchParams }: Props) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSession();
   const { callbackUrl = DEFAULT_CALLBACK_URL } = await searchParams;
 
   if (session) {

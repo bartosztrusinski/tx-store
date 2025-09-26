@@ -1,4 +1,5 @@
-import { LogOut, User } from 'lucide-react';
+import { type User } from '@prisma/client';
+import { LogOut, UserIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -14,9 +15,9 @@ import {
 import { logOut } from '@/features/auth/actions';
 
 type Props = {
-  email: string;
-  image?: string | null;
-  name: string;
+  email: User['email'];
+  image?: User['image'];
+  name: User['name'];
 };
 
 export function UserMenu({ email, image, name }: Props) {
@@ -37,7 +38,7 @@ export function UserMenu({ email, image, name }: Props) {
         </DropdownMenuLabel>
         <DropdownMenuItem asChild className='cursor-pointer'>
           <Link href='/profile'>
-            <User />
+            <UserIcon />
             Profile
           </Link>
         </DropdownMenuItem>
