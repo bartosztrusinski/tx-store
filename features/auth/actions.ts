@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+import { deleteCartCookie, getCartCookie } from '@/features/cart/cookie';
 import { mergeUserAndGuestCarts } from '@/features/cart/data';
 import { auth } from '@/lib/auth';
 import { type ActionResponse } from '@/lib/types';
@@ -33,8 +34,13 @@ export async function logIn(
     const { user } = await auth.api.signInEmail({
       body: { email, password },
     });
-    await mergeUserAndGuestCarts(user.id);
-    revalidatePath('/');
+    const sessionId = await getCartCookie();
+
+    if (sessionId) {
+      await mergeUserAndGuestCarts(user.id, sessionId);
+      await deleteCartCookie();
+      revalidatePath('/');
+    }
   } catch (error) {
     return {
       isSuccess: false,
@@ -75,8 +81,13 @@ export async function register(
     const { user } = await auth.api.signUpEmail({
       body: { email, name, password },
     });
-    await mergeUserAndGuestCarts(user.id);
-    revalidatePath('/');
+    const sessionId = await getCartCookie();
+
+    if (sessionId) {
+      await mergeUserAndGuestCarts(user.id, sessionId);
+      await deleteCartCookie();
+      revalidatePath('/');
+    }
   } catch (error) {
     return {
       isSuccess: false,

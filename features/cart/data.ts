@@ -1,26 +1,14 @@
 import { type Cart, type CartItem, Prisma } from '@prisma/client';
-import { headers } from 'next/headers';
-import { randomUUID } from 'node:crypto';
 
-import { auth } from '@/lib/auth';
 import { db, dbPool } from '@/lib/db';
 
-import { deleteCartCookie, getCartCookie, setCartCookie } from './cookie';
+export async function createGuestCart(sessionId: Cart['sessionId']): Promise<Cart['id']> {
+  const { id } = await db.cart.create({
+    data: { sessionId },
+    select: { id: true },
+  });
 
-export async function createCart(): Promise<Cart['id']> {
-  const session = await auth.api.getSession({ headers: await headers() });
-  const userId = session?.user.id;
-
-  if (userId) {
-    const cartId = await createUserCart(userId);
-    return cartId;
-  }
-
-  const sessionId = randomUUID();
-  const cartId = await createGuestCart(sessionId);
-  await setCartCookie(sessionId);
-
-  return cartId;
+  return id;
 }
 
 export async function createOrGetUserCartWithItems(userId: NonNullable<Cart['userId']>) {
@@ -40,6 +28,15 @@ export async function createOrGetUserCartWithItems(userId: NonNullable<Cart['use
   });
 }
 
+export async function createUserCart(userId: NonNullable<Cart['userId']>): Promise<Cart['id']> {
+  const { id } = await db.cart.create({
+    data: { userId },
+    select: { id: true },
+  });
+
+  return id;
+}
+
 export async function deleteCart(cartId: Cart['id']) {
   await db.cart.delete({ where: { id: cartId } });
 }
@@ -50,11 +47,10 @@ export async function deleteCartItem(cartId: CartItem['cartId'], productId: Cart
   });
 }
 
-export async function getCartId() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  const userId = session?.user.id;
-  const sessionId = await getCartCookie();
-
+export async function getCartId({
+  sessionId,
+  userId,
+}: Pick<Partial<Cart>, 'userId' | 'sessionId'>) {
   if (!userId && !sessionId) {
     return null;
   }
@@ -67,11 +63,10 @@ export async function getCartId() {
   return cart?.id ?? null;
 }
 
-export async function getCartItemQuantity(productId: CartItem['productId']) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  const userId = session?.user.id;
-  const sessionId = await getCartCookie();
-
+export async function getCartItemQuantity(
+  productId: CartItem['productId'],
+  { sessionId, userId }: Pick<Partial<Cart>, 'userId' | 'sessionId'>,
+) {
   if (!userId && !sessionId) {
     return null;
   }
@@ -102,24 +97,19 @@ export async function getGuestCartWithItems(sessionId: NonNullable<Cart['session
   });
 }
 
-export async function mergeUserAndGuestCarts(userId: NonNullable<Cart['userId']>) {
-  const sessionId = await getCartCookie();
-
-  if (!sessionId) {
-    return { isSuccess: true };
-  }
-
+export async function mergeUserAndGuestCarts(
+  userId: NonNullable<Cart['userId']>,
+  sessionId: NonNullable<Cart['sessionId']>,
+) {
   const guestCart = await getGuestCartWithItems(sessionId);
 
   if (!guestCart) {
-    await deleteCartCookie();
-    return { isSuccess: true };
+    return;
   }
 
   if (guestCart.items.length === 0) {
     await deleteCart(guestCart.id);
-    await deleteCartCookie();
-    return { isSuccess: true };
+    return;
   }
 
   const userCart = await createOrGetUserCartWithItems(userId);
@@ -151,9 +141,6 @@ export async function mergeUserAndGuestCarts(userId: NonNullable<Cart['userId']>
 
   await upsertCartItems(mergedCartItems);
   await deleteCart(guestCart.id);
-  await deleteCartCookie();
-
-  return { isSuccess: true };
 }
 
 export async function upsertCartItem(
@@ -180,22 +167,4 @@ export async function upsertCartItems(items: Omit<CartItem, 'id'>[]) {
       ON CONFLICT ("cartId", "productId")
       DO UPDATE SET "quantity" = EXCLUDED."quantity", "createdAt" = EXCLUDED."createdAt";
     `;
-}
-
-async function createGuestCart(sessionId: Cart['sessionId']): Promise<Cart['id']> {
-  const { id } = await db.cart.create({
-    data: { sessionId },
-    select: { id: true },
-  });
-
-  return id;
-}
-
-async function createUserCart(userId: Cart['userId']): Promise<Cart['id']> {
-  const { id } = await db.cart.create({
-    data: { userId },
-    select: { id: true },
-  });
-
-  return id;
 }

@@ -2,17 +2,24 @@
 
 import { type Cart, type CartItem } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
+import { randomUUID } from 'node:crypto';
 
 import { getProductStock } from '@/features/product/data';
+import { auth } from '@/lib/auth';
 import { type ActionResponse } from '@/lib/types';
 
-import { createCart, deleteCartItem, getCartId, upsertCartItem } from './data';
+import { getCartCookie, setCartCookie } from './cookie';
+import { createGuestCart, createUserCart, deleteCartItem, getCartId, upsertCartItem } from './data';
 
 export async function setCartItem(
   productId: CartItem['productId'],
   quantity: CartItem['quantity'],
 ): Promise<ActionResponse> {
-  const cartId: Cart['id'] = (await getCartId()) ?? (await createCart());
+  const sessionId = await getCartCookie();
+  const session = await auth.api.getSession({ headers: await headers() });
+  const userId = session?.user.id ?? null;
+  const cartId = (await getCartId({ sessionId, userId })) ?? (await createCart(userId));
 
   if (quantity <= 0) {
     await deleteCartItem(cartId, productId);
@@ -33,4 +40,16 @@ export async function setCartItem(
   await upsertCartItem(cartId, productId, quantity);
   revalidatePath('/');
   return { isSuccess: true };
+}
+
+async function createCart(userId: Cart['userId']): Promise<Cart['id']> {
+  if (userId) {
+    const cartId = await createUserCart(userId);
+    return cartId;
+  }
+
+  const newSessionId = randomUUID();
+  const cartId = await createGuestCart(newSessionId);
+  await setCartCookie(newSessionId);
+  return cartId;
 }
