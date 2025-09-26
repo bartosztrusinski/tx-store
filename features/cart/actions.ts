@@ -9,17 +9,18 @@ import { getProductStock } from '@/features/product/data';
 import { auth } from '@/lib/auth';
 import { type ActionResponse } from '@/lib/types';
 
-import { getCartCookie, setCartCookie } from './cookie';
+import { getGuestCartCookie, setGuestCartCookie } from './cookie';
 import { createGuestCart, createUserCart, deleteCartItem, getCartId, upsertCartItem } from './data';
 
 export async function setCartItem(
   productId: CartItem['productId'],
   quantity: CartItem['quantity'],
 ): Promise<ActionResponse> {
-  const sessionId = await getCartCookie();
+  const guestCartSessionId = await getGuestCartCookie();
   const session = await auth.api.getSession({ headers: await headers() });
   const userId = session?.user.id ?? null;
-  const cartId = (await getCartId({ sessionId, userId })) ?? (await createCart(userId));
+  const cartId =
+    (await getCartId({ sessionId: guestCartSessionId, userId })) ?? (await createCart(userId));
 
   if (quantity <= 0) {
     await deleteCartItem(cartId, productId);
@@ -50,6 +51,6 @@ async function createCart(userId: Cart['userId']): Promise<Cart['id']> {
 
   const newSessionId = randomUUID();
   const cartId = await createGuestCart(newSessionId);
-  await setCartCookie(newSessionId);
+  await setGuestCartCookie(newSessionId);
   return cartId;
 }

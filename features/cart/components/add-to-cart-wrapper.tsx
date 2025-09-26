@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 
 import { auth } from '@/lib/auth';
 
-import { getCartCookie } from '../cookie';
+import { getGuestCartCookie } from '../cookie';
 import { getCartItemQuantity } from '../data';
 import { AddToCartControl } from './add-to-cart-control';
 
@@ -13,10 +13,13 @@ type Props = {
 };
 
 export async function AddToCartWrapper({ productId, productStock }: Props) {
-  const sessionId = await getCartCookie();
+  const guestCartSessionId = await getGuestCartCookie();
   const session = await auth.api.getSession({ headers: await headers() });
   const userId = session?.user.id ?? null;
-  const cartItemQuantity = await getCartItemQuantity(productId, { sessionId, userId });
+  const cartItemQuantity = await getCartItemQuantity(productId, {
+    sessionId: guestCartSessionId,
+    userId,
+  });
 
   return (
     <AddToCartControl

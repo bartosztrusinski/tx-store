@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-import { deleteCartCookie, getCartCookie } from '@/features/cart/cookie';
+import { deleteGuestCartCookie, getGuestCartCookie } from '@/features/cart/cookie';
 import { mergeUserAndGuestCarts } from '@/features/cart/data';
 import { auth } from '@/lib/auth';
 import { type ActionResponse } from '@/lib/types';
@@ -34,11 +34,11 @@ export async function logIn(
     const { user } = await auth.api.signInEmail({
       body: { email, password },
     });
-    const sessionId = await getCartCookie();
+    const guestCartSessionId = await getGuestCartCookie();
 
-    if (sessionId) {
-      await mergeUserAndGuestCarts(user.id, sessionId);
-      await deleteCartCookie();
+    if (guestCartSessionId) {
+      await mergeUserAndGuestCarts(user.id, guestCartSessionId);
+      await deleteGuestCartCookie();
       revalidatePath('/');
     }
   } catch (error) {
@@ -81,11 +81,11 @@ export async function register(
     const { user } = await auth.api.signUpEmail({
       body: { email, name, password },
     });
-    const sessionId = await getCartCookie();
+    const guestCartSessionId = await getGuestCartCookie();
 
-    if (sessionId) {
-      await mergeUserAndGuestCarts(user.id, sessionId);
-      await deleteCartCookie();
+    if (guestCartSessionId) {
+      await mergeUserAndGuestCarts(user.id, guestCartSessionId);
+      await deleteGuestCartCookie();
       revalidatePath('/');
     }
   } catch (error) {
