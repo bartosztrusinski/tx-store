@@ -1,4 +1,5 @@
 import { type Cart, type CartItem, Prisma } from '@prisma/client';
+import { cache } from 'react';
 
 import { db, dbPool } from '@/lib/db';
 import { mergeArraysByKey } from '@/lib/utils/merge-arrays-by-key';
@@ -8,11 +9,24 @@ export async function createGuestCart(sessionId: Cart['sessionId']): Promise<Car
     data: { sessionId },
     select: { id: true },
   });
-
   return id;
 }
 
-export async function createOrGetUserCartWithItems(userId: NonNullable<Cart['userId']>) {
+export async function createUserCart(userId: NonNullable<Cart['userId']>): Promise<Cart['id']> {
+  const { id } = await db.cart.create({
+    data: { userId },
+    select: { id: true },
+  });
+  return id;
+}
+
+export async function deleteCartItem(cartId: CartItem['cartId'], productId: CartItem['productId']) {
+  await db.cartItem.delete({
+    where: { cartId_productId: { cartId, productId } },
+  });
+}
+
+const createOrGetUserCartWithItems = cache(async (userId: NonNullable<Cart['userId']>) => {
   return await dbPool.cart.upsert({
     create: { userId },
     include: {
@@ -28,63 +42,49 @@ export async function createOrGetUserCartWithItems(userId: NonNullable<Cart['use
     update: {},
     where: { userId },
   });
-}
+});
 
-export async function createUserCart(userId: NonNullable<Cart['userId']>): Promise<Cart['id']> {
-  const { id } = await db.cart.create({
-    data: { userId },
-    select: { id: true },
-  });
-
-  return id;
-}
-
-export async function deleteCart(cartId: Cart['id']) {
+async function deleteCart(cartId: Cart['id']) {
   await db.cart.delete({ where: { id: cartId } });
 }
 
-export async function deleteCartItem(cartId: CartItem['cartId'], productId: CartItem['productId']) {
-  await db.cartItem.delete({
-    where: { cartId_productId: { cartId, productId } },
-  });
-}
+export const getCartId = cache(
+  async ({ sessionId, userId }: Pick<Partial<Cart>, 'userId' | 'sessionId'>) => {
+    if (!userId && !sessionId) {
+      return null;
+    }
 
-export async function getCartId({
-  sessionId,
-  userId,
-}: Pick<Partial<Cart>, 'userId' | 'sessionId'>) {
-  if (!userId && !sessionId) {
-    return null;
-  }
+    const cart = await db.cart.findUnique({
+      select: { id: true },
+      where: userId ? { userId } : { sessionId: sessionId! },
+    });
 
-  const cart = await db.cart.findUnique({
-    select: { id: true },
-    where: userId ? { userId } : { sessionId: sessionId! },
-  });
+    return cart?.id ?? null;
+  },
+);
 
-  return cart?.id ?? null;
-}
+export const getCartItemQuantity = cache(
+  async (
+    productId: CartItem['productId'],
+    { sessionId, userId }: Pick<Partial<Cart>, 'userId' | 'sessionId'>,
+  ) => {
+    if (!userId && !sessionId) {
+      return null;
+    }
 
-export async function getCartItemQuantity(
-  productId: CartItem['productId'],
-  { sessionId, userId }: Pick<Partial<Cart>, 'userId' | 'sessionId'>,
-) {
-  if (!userId && !sessionId) {
-    return null;
-  }
+    const cartItem = await db.cartItem.findFirst({
+      select: { quantity: true },
+      where: {
+        cart: userId ? { userId } : { sessionId },
+        productId,
+      },
+    });
 
-  const cartItem = await db.cartItem.findFirst({
-    select: { quantity: true },
-    where: {
-      cart: userId ? { userId } : { sessionId },
-      productId,
-    },
-  });
+    return cartItem?.quantity ?? null;
+  },
+);
 
-  return cartItem?.quantity ?? null;
-}
-
-export async function getGuestCartWithItems(sessionId: NonNullable<Cart['sessionId']>) {
+const getGuestCartWithItems = cache(async (sessionId: NonNullable<Cart['sessionId']>) => {
   return await db.cart.findUnique({
     include: {
       items: {
@@ -98,7 +98,7 @@ export async function getGuestCartWithItems(sessionId: NonNullable<Cart['session
     },
     where: { sessionId },
   });
-}
+});
 
 export async function mergeUserAndGuestCarts(
   userId: NonNullable<Cart['userId']>,
@@ -144,7 +144,7 @@ export async function upsertCartItem(
   });
 }
 
-export async function upsertCartItems(items: Omit<CartItem, 'id'>[]) {
+async function upsertCartItems(items: Omit<CartItem, 'id'>[]) {
   return await db.$executeRaw`
       INSERT INTO "CartItem" ("cartId", "createdAt", "productId", "quantity")
       VALUES ${Prisma.join(

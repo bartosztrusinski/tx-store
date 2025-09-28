@@ -1,24 +1,25 @@
 import { type Product } from '@prisma/client';
+import { cache } from 'react';
 
 import { LATEST_PRODUCTS_LIMIT } from '@/lib/constants';
 import { db } from '@/lib/db';
 
-export async function getLatestProducts(): Promise<Product[]> {
-  return db.product.findMany({
+export const getLatestProducts = cache(async () => {
+  return await db.product.findMany({
     orderBy: { createdAt: 'desc' },
     take: LATEST_PRODUCTS_LIMIT,
   });
-}
+});
 
-export async function getProductBySlug(slug: Product['slug']): Promise<Product | null> {
-  return db.product.findUnique({
+export const getProductBySlug = cache(async (slug: Product['slug']) => {
+  return await db.product.findUnique({
     where: { slug },
   });
-}
+});
 
-export async function getProductStock(productId: Product['id']) {
+export const getProductStock = cache(async (productId: Product['id']) => {
   return await db.product.findUnique({
     select: { stock: true },
     where: { id: productId },
   });
-}
+});
