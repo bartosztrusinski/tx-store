@@ -1,6 +1,7 @@
 import { type Cart, type CartItem, Prisma } from '@prisma/client';
 
 import { db, dbPool } from '@/lib/db';
+import { mergeArraysByKey } from '@/lib/utils/merge-arrays-by-key';
 
 export async function createGuestCart(sessionId: Cart['sessionId']): Promise<Cart['id']> {
   const { id } = await db.cart.create({
@@ -18,7 +19,8 @@ export async function createOrGetUserCartWithItems(userId: NonNullable<Cart['use
       items: {
         select: {
           createdAt: true,
-          product: { select: { id: true, stock: true } },
+          product: { select: { stock: true } },
+          productId: true,
           quantity: true,
         },
       },
@@ -88,7 +90,8 @@ export async function getGuestCartWithItems(sessionId: NonNullable<Cart['session
       items: {
         select: {
           createdAt: true,
-          product: { select: { id: true, stock: true } },
+          product: { select: { stock: true } },
+          productId: true,
           quantity: true,
         },
       },
@@ -113,31 +116,17 @@ export async function mergeUserAndGuestCarts(
   }
 
   const userCart = await createOrGetUserCartWithItems(userId);
-  const mergedCartItems = Object.values(
-    [...userCart.items, ...guestCart.items].reduce<
-      Record<CartItem['productId'], Omit<CartItem, 'id'>>
-    >((items, item) => {
-      const existingItem = items[item.product.id];
-      const clampedQuantity = Math.min(
-        item.quantity + (existingItem?.quantity ?? 0),
-        item.product.stock,
-      );
-      const earliestCreatedAt =
-        existingItem && existingItem.createdAt < item.createdAt ?
-          existingItem.createdAt
-        : item.createdAt;
-
-      return {
-        ...items,
-        [item.product.id]: {
-          cartId: userCart.id,
-          createdAt: earliestCreatedAt,
-          productId: item.product.id,
-          quantity: clampedQuantity,
-        },
-      };
-    }, {}),
-  );
+  const mergedCartItems = mergeArraysByKey(
+    userCart.items,
+    guestCart.items,
+    'productId',
+    (userItem, guestItem) => ({
+      ...userItem,
+      createdAt:
+        userItem.createdAt < guestItem.createdAt ? userItem.createdAt : guestItem.createdAt, // keep the earliest createdAt
+      quantity: Math.min(userItem.quantity + guestItem.quantity, userItem.product.stock), // limit quantity sum to product stock
+    }),
+  ).map(({ product: _, ...rest }) => ({ ...rest, cartId: userCart.id }));
 
   await upsertCartItems(mergedCartItems);
   await deleteCart(guestCart.id);
