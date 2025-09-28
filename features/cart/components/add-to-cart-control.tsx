@@ -1,6 +1,7 @@
 'use client';
 
 import { type Product } from '@prisma/client';
+import { usePathname } from 'next/navigation';
 import { startTransition, useOptimistic } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ type Props = {
 };
 
 export function AddToCartControl({ cartQuantity, productId, productStock }: Props) {
+  const pathname = usePathname();
   const [optimisticQuantity, setOptimisticQuantity] = useOptimistic<number, number>(
     cartQuantity,
     (_, newQuantity) => newQuantity,
@@ -23,7 +25,7 @@ export function AddToCartControl({ cartQuantity, productId, productStock }: Prop
   const handleCartUpdate = async (quantity: number) => {
     startTransition(async () => {
       setOptimisticQuantity(quantity);
-      await setCartItem(productId, quantity);
+      await setCartItem(productId, quantity, pathname);
     });
   };
 

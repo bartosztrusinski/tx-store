@@ -14,6 +14,7 @@ import { createGuestCart, createUserCart, deleteCartItem, getCartId, upsertCartI
 export async function setCartItem(
   productId: CartItem['productId'],
   quantity: CartItem['quantity'],
+  path: string,
 ): Promise<ActionResponse> {
   const guestCartSessionId = await getGuestCartCookie();
   const user = await getCurrentUser();
@@ -23,7 +24,7 @@ export async function setCartItem(
 
   if (quantity <= 0) {
     await deleteCartItem(cartId, productId);
-    revalidatePath('/');
+    revalidatePath(path);
     return { isSuccess: true };
   }
 
@@ -38,7 +39,7 @@ export async function setCartItem(
   }
 
   await upsertCartItem(cartId, productId, quantity);
-  revalidatePath('/');
+  revalidatePath(path);
   return { isSuccess: true };
 }
 

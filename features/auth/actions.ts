@@ -1,6 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -39,7 +38,6 @@ export async function logIn(
     if (guestCartSessionId) {
       await mergeUserAndGuestCarts(user.id, guestCartSessionId);
       await deleteGuestCartCookie();
-      revalidatePath('/');
     }
   } catch (error) {
     return {
@@ -86,7 +84,6 @@ export async function register(
     if (guestCartSessionId) {
       await mergeUserAndGuestCarts(user.id, guestCartSessionId);
       await deleteGuestCartCookie();
-      revalidatePath('/');
     }
   } catch (error) {
     return {
