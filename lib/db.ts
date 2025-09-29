@@ -1,11 +1,13 @@
 import { neonConfig } from '@neondatabase/serverless';
 import { PrismaNeon, PrismaNeonHTTP } from '@prisma/adapter-neon';
-import { PrismaClient } from '@prisma/client';
+import { type Prisma, PrismaClient } from '@prisma/client';
 
 const globalForPrisma = globalThis as unknown as {
   db: PrismaClient | undefined;
   dbPool: PrismaClient | undefined;
 };
+
+type DbClient = Prisma.TransactionClient | PrismaClient;
 
 neonConfig.poolQueryViaFetch = true;
 
@@ -23,3 +25,4 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 export { db, dbPool };
+export type { DbClient };
