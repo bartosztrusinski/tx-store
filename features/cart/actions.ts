@@ -6,6 +6,7 @@ import { randomUUID } from 'node:crypto';
 
 import { getProductStock } from '@/features/product/data';
 import { getCurrentUser } from '@/lib/auth';
+import { type DbClient, dbPool } from '@/lib/db';
 import { type ActionResponse } from '@/lib/types';
 
 import { getGuestCartCookie, setGuestCartCookie } from './cookie';
@@ -18,39 +19,45 @@ export async function setCartItem(
 ): Promise<ActionResponse> {
   const guestCartSessionId = await getGuestCartCookie();
   const user = await getCurrentUser();
-  const cartId =
-    (await getCartId({ sessionId: guestCartSessionId, userId: user?.id })) ??
-    (await createCart(user?.id));
 
-  if (quantity <= 0) {
-    await deleteCartItem(cartId, productId);
+  return await dbPool.$transaction(async (tx) => {
+    const cartId =
+      (await getCartId({ sessionId: guestCartSessionId, userId: user?.id }, tx)) ??
+      (await createCart(user?.id, tx));
+
+    if (quantity <= 0) {
+      await deleteCartItem(cartId, productId, tx);
+      revalidatePath(path);
+      return { isSuccess: true };
+    }
+
+    const product = await getProductStock(productId, tx);
+
+    if (!product) {
+      return { isSuccess: false, message: 'Product not found' };
+    }
+
+    if (product.stock < quantity) {
+      return { isSuccess: false, message: 'Not enough stock available' };
+    }
+
+    await upsertCartItem(cartId, productId, quantity, tx);
     revalidatePath(path);
     return { isSuccess: true };
-  }
-
-  const product = await getProductStock(productId);
-
-  if (!product) {
-    return { isSuccess: false, message: 'Product not found' };
-  }
-
-  if (product.stock < quantity) {
-    return { isSuccess: false, message: 'Not enough stock available' };
-  }
-
-  await upsertCartItem(cartId, productId, quantity);
-  revalidatePath(path);
-  return { isSuccess: true };
+  });
 }
 
-async function createCart(userId: Cart['userId'] | undefined): Promise<Cart['id']> {
+async function createCart(
+  userId: Cart['userId'] | undefined,
+  dbClient: DbClient,
+): Promise<Cart['id']> {
   if (userId) {
-    const cartId = await createUserCart(userId);
+    const cartId = await createUserCart(userId, dbClient);
     return cartId;
   }
 
   const newSessionId = randomUUID();
-  const cartId = await createGuestCart(newSessionId);
+  const cartId = await createGuestCart(newSessionId, dbClient);
   await setGuestCartCookie(newSessionId);
   return cartId;
 }
