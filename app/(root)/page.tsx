@@ -2,7 +2,15 @@ import { ProductList } from '@/features/product/components/product-list';
 import { getLatestProducts } from '@/features/product/data';
 
 export default async function HomePage() {
-  const latestProducts = await getLatestProducts();
+  const latestProducts = await getLatestProducts({
+    brand: true,
+    images: true,
+    name: true,
+    price: true,
+    rating: true,
+    slug: true,
+    stock: true,
+  });
 
   return (
     <>

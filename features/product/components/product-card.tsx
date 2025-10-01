@@ -15,7 +15,7 @@ import {
 import { ProductPrice } from './product-price';
 
 type Props = {
-  product: Product;
+  product: Pick<Product, 'brand' | 'images' | 'name' | 'price' | 'rating' | 'slug' | 'stock'>;
 };
 
 export function ProductCard({ product }: Props) {

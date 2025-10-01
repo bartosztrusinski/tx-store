@@ -1,10 +1,10 @@
-import { type Product } from '@prisma/client';
+import { type ComponentProps } from 'react';
 
 import { ProductCard } from './product-card';
 
 type Props = {
   limit?: number;
-  products: Product[];
+  products: ComponentProps<typeof ProductCard>['product'][];
 };
 
 export function ProductList({ limit, products }: Props) {
