@@ -1,9 +1,6 @@
 import { type Product } from '@prisma/client';
 
-import { getCurrentUser } from '@/lib/auth';
-
-import { getGuestCartCookie } from '../cookie';
-import { getCartItemQuantity } from '../data';
+import { getCurrentCartItemQuantity } from '../data';
 import { AddToCartControl } from './add-to-cart-control';
 
 type Props = {
@@ -12,12 +9,7 @@ type Props = {
 };
 
 export async function AddToCartWrapper({ productId, productStock }: Props) {
-  const guestCartSessionId = await getGuestCartCookie();
-  const user = await getCurrentUser();
-  const cartItemQuantity = await getCartItemQuantity(productId, {
-    sessionId: guestCartSessionId,
-    userId: user?.id,
-  });
+  const cartItemQuantity = await getCurrentCartItemQuantity(productId);
 
   return (
     <AddToCartControl

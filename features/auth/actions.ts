@@ -3,8 +3,7 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-import { deleteGuestCartCookie, getGuestCartCookie } from '@/features/cart/cookie';
-import { mergeUserAndGuestCarts } from '@/features/cart/data';
+import { mergeCurrentUserAndGuestCarts } from '@/features/cart/data';
 import { auth } from '@/lib/auth';
 import { type ActionResponse } from '@/lib/types';
 
@@ -33,12 +32,7 @@ export async function logIn(
     const { user } = await auth.api.signInEmail({
       body: { email, password },
     });
-    const guestCartSessionId = await getGuestCartCookie();
-
-    if (guestCartSessionId) {
-      await mergeUserAndGuestCarts(user.id, guestCartSessionId);
-      await deleteGuestCartCookie();
-    }
+    await mergeCurrentUserAndGuestCarts(user.id);
   } catch (error) {
     return {
       isSuccess: false,
@@ -79,12 +73,7 @@ export async function register(
     const { user } = await auth.api.signUpEmail({
       body: { email, name, password },
     });
-    const guestCartSessionId = await getGuestCartCookie();
-
-    if (guestCartSessionId) {
-      await mergeUserAndGuestCarts(user.id, guestCartSessionId);
-      await deleteGuestCartCookie();
-    }
+    await mergeCurrentUserAndGuestCarts(user.id);
   } catch (error) {
     return {
       isSuccess: false,
