@@ -7,7 +7,7 @@ import { ProductImageGallery } from './product-image-gallery';
 import { ProductPrice } from './product-price';
 
 type Props = {
-  product: Product;
+  product: Pick<Product, 'category' | 'stock' | 'images' | 'name' | 'price' | 'description' | 'id'>;
 };
 
 export function ProductDetail({ product }: Props) {
