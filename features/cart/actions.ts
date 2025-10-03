@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 
 import { getProductById } from '@/features/product/data';
 import { getCurrentUser } from '@/lib/auth';
-import { dbPool } from '@/lib/db';
+import { dbTransaction } from '@/lib/db';
 import { type ActionResponse } from '@/lib/types';
 
 import {
@@ -20,7 +20,7 @@ export async function setCartItem(
   quantity: CartItem['quantity'],
   path: string,
 ): Promise<ActionResponse> {
-  return await dbPool.$transaction(async (tx) => {
+  return await dbTransaction(async (tx) => {
     const currentUser = await getCurrentUser();
     const cartId =
       currentUser ? await getOrCreateCurrentUserCart(tx) : await getOrCreateGuestCart(tx);

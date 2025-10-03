@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { cache } from 'react';
 
 import { getCurrentUser } from '@/lib/auth';
-import { db, type DbClient, dbPool } from '@/lib/db';
+import { db, type DbClient, dbTransaction } from '@/lib/db';
 import { mergeArraysByKey } from '@/lib/utils/merge-arrays-by-key';
 
 import { deleteGuestCartCookie, getGuestCartCookie, setGuestCartCookie } from './cookie';
@@ -53,7 +53,7 @@ export async function getOrCreateGuestCart(dbClient: DbClient = db) {
 }
 
 const createOrGetUserCartWithItems = cache(
-  async (userId: NonNullable<Cart['userId']>, dbClient: DbClient = dbPool) => {
+  async (userId: NonNullable<Cart['userId']>, dbClient: DbClient = db) => {
     return await dbClient.cart.upsert({
       create: { userId },
       select: {
@@ -98,7 +98,7 @@ export const getCurrentCartItem = cache(
 );
 
 export async function mergeCurrentUserAndGuestCarts(userId: NonNullable<Cart['userId']>) {
-  await dbPool.$transaction(async (tx) => {
+  await dbTransaction(async (tx) => {
     const guestCart = await getGuestCartWithItems(tx);
 
     if (!guestCart) {
@@ -173,7 +173,7 @@ const getGuestCartWithItems = cache(async (dbClient: DbClient = db) => {
 });
 
 async function upsertCartItems(items: Prisma.CartItemCreateManyInput[], dbClient: DbClient = db) {
-  return await dbClient.$executeRaw`
+  await dbClient.$executeRaw`
       INSERT INTO "CartItem" ("cartId", "createdAt", "productId", "quantity")
       VALUES ${Prisma.join(
         items.map(
