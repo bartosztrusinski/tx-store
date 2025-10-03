@@ -1,6 +1,6 @@
 import { type Product } from '@prisma/client';
 
-import { getCurrentCartItemQuantity } from '../data';
+import { getCurrentCartItem } from '../data';
 import { AddToCartControl } from './add-to-cart-control';
 
 type Props = {
@@ -9,11 +9,11 @@ type Props = {
 };
 
 export async function AddToCartWrapper({ productId, productStock }: Props) {
-  const cartItemQuantity = await getCurrentCartItemQuantity(productId);
+  const cartItem = await getCurrentCartItem(productId, { quantity: true });
 
   return (
     <AddToCartControl
-      cartQuantity={cartItemQuantity ?? 0}
+      cartQuantity={cartItem?.quantity ?? 0}
       productId={productId}
       productStock={productStock}
     />

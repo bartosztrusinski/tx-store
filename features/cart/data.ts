@@ -73,22 +73,27 @@ const createOrGetUserCartWithItems = cache(
   },
 );
 
-export const getCurrentCartItemQuantity = cache(
-  async (productId: CartItem['productId'], dbClient: DbClient = db) => {
+export const getCurrentCartItem = cache(
+  async <T extends Prisma.CartItemSelect>(
+    productId: CartItem['productId'],
+    select: T,
+    dbClient: DbClient = db,
+  ) => {
     const guestCartSessionId = await getGuestCartCookie();
     const user = await getCurrentUser();
-    if (!user && !guestCartSessionId) {
+    const cartIdentifier: Prisma.CartWhereInput | null =
+      user ? { userId: user.id }
+      : guestCartSessionId ? { sessionId: guestCartSessionId }
+      : null;
+
+    if (!cartIdentifier) {
       return null;
     }
 
-    const cartItem = await dbClient.cartItem.findFirst({
-      select: { quantity: true },
-      where: {
-        cart: user ? { userId: user.id } : { sessionId: guestCartSessionId! },
-        productId,
-      },
+    return await dbClient.cartItem.findFirst({
+      select,
+      where: { cart: cartIdentifier, productId },
     });
-    return cartItem?.quantity ?? null;
   },
 );
 
