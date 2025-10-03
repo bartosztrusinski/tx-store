@@ -18,24 +18,18 @@ export async function deleteCartItem(
   });
 }
 
-export async function getOrCreateCurrentUserCart(dbClient: DbClient = db) {
+export const getOrCreateCurrentUserCart = cache(async (dbClient: DbClient = db) => {
   const user = await getCurrentUser();
 
   if (!user) {
     throw new Error('User not authenticated');
   }
 
-  const cart = await dbClient.cart.upsert({
-    create: { userId: user.id },
-    select: { id: true },
-    update: {},
-    where: { userId: user.id },
-  });
+  const currentUserCart = await getOrCreateUserCart(user.id, { id: true }, dbClient);
+  return currentUserCart.id;
+});
 
-  return cart.id;
-}
-
-export async function getOrCreateGuestCart(dbClient: DbClient = db) {
+export const getOrCreateGuestCart = cache(async (dbClient: DbClient = db) => {
   const guestCartSessionId = await getGuestCartCookie();
   const newSessionId = randomUUID();
 
@@ -60,23 +54,17 @@ export async function getOrCreateGuestCart(dbClient: DbClient = db) {
   }
 
   return cart.id;
-}
+});
 
-const createOrGetUserCartWithItems = cache(
-  async (userId: NonNullable<Cart['userId']>, dbClient: DbClient = db) => {
+const getOrCreateUserCart = cache(
+  async <T extends Prisma.CartSelect>(
+    userId: NonNullable<Cart['userId']>,
+    select: T,
+    dbClient: DbClient = db,
+  ) => {
     return await dbClient.cart.upsert({
       create: { userId },
-      select: {
-        id: true,
-        items: {
-          select: {
-            createdAt: true,
-            product: { select: { stock: true } },
-            productId: true,
-            quantity: true,
-          },
-        },
-      },
+      select,
       update: {},
       where: { userId },
     });
@@ -108,8 +96,19 @@ export const getCurrentCartItem = cache(
 );
 
 export async function mergeCurrentUserAndGuestCarts(userId: NonNullable<Cart['userId']>) {
+  const itemFields = {
+    items: {
+      select: {
+        createdAt: true,
+        product: { select: { stock: true } },
+        productId: true,
+        quantity: true,
+      },
+    },
+  } satisfies Prisma.CartSelect;
+
   await dbTransaction(async (tx) => {
-    const guestCart = await getGuestCartWithItems(tx);
+    const guestCart = await getGuestCart(itemFields, tx);
 
     if (!guestCart) {
       return;
@@ -120,7 +119,7 @@ export async function mergeCurrentUserAndGuestCarts(userId: NonNullable<Cart['us
       return;
     }
 
-    const userCart = await createOrGetUserCartWithItems(userId, tx);
+    const userCart = await getOrCreateUserCart(userId, { id: true, ...itemFields }, tx);
     const mergedCartItems = mergeArraysByKey(
       userCart.items,
       guestCart.items,
@@ -160,27 +159,20 @@ async function deleteGuestCart(dbClient: DbClient = db) {
   await deleteGuestCartCookie();
 }
 
-const getGuestCartWithItems = cache(async (dbClient: DbClient = db) => {
-  const guestCartSessionId = await getGuestCartCookie();
+const getGuestCart = cache(
+  async <T extends Prisma.CartSelect>(select: T, dbClient: DbClient = db) => {
+    const guestCartSessionId = await getGuestCartCookie();
 
-  if (!guestCartSessionId) {
-    return null;
-  }
+    if (!guestCartSessionId) {
+      return null;
+    }
 
-  return await dbClient.cart.findUnique({
-    include: {
-      items: {
-        select: {
-          createdAt: true,
-          product: { select: { stock: true } },
-          productId: true,
-          quantity: true,
-        },
-      },
-    },
-    where: { sessionId: guestCartSessionId },
-  });
-});
+    return await dbClient.cart.findUnique({
+      select,
+      where: { sessionId: guestCartSessionId },
+    });
+  },
+);
 
 async function upsertCartItems(items: Prisma.CartItemCreateManyInput[], dbClient: DbClient = db) {
   await dbClient.$executeRaw`
