@@ -38,11 +38,21 @@ export async function getOrCreateCurrentUserCart(dbClient: DbClient = db) {
 export async function getOrCreateGuestCart(dbClient: DbClient = db) {
   const guestCartSessionId = await getGuestCartCookie();
   const newSessionId = randomUUID();
+
+  if (!guestCartSessionId) {
+    const cart = await dbClient.cart.create({
+      data: { sessionId: newSessionId },
+      select: { id: true },
+    });
+    await setGuestCartCookie(newSessionId);
+    return cart.id;
+  }
+
   const cart = await dbClient.cart.upsert({
     create: { sessionId: newSessionId },
     select: { id: true, sessionId: true },
     update: {},
-    where: { sessionId: guestCartSessionId ?? undefined },
+    where: { sessionId: guestCartSessionId },
   });
 
   if (cart.sessionId === newSessionId) {
