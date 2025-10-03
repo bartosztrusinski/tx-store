@@ -1,6 +1,6 @@
-import { Prisma, type Product } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
-export const products: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>[] = [
+export const products: Prisma.ProductCreateManyInput[] = [
   {
     banner: 'banner-1.jpg',
     brand: 'Polo',
