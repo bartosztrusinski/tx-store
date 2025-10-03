@@ -1,3 +1,4 @@
+import 'server-only';
 import { type Cart, type CartItem, Prisma } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import { cache } from 'react';
