@@ -1,11 +1,11 @@
 type Failure<E> = readonly [null, E];
-type Operation<T> = Promise<T> | (() => T) | (() => Promise<T>);
-type ResultAsync<T, E> = Promise<Success<T> | Failure<E>>;
+type Operation<T> = (() => Promise<T>) | (() => T) | Promise<T>;
+type ResultAsync<T, E> = Promise<ResultSync<T, E>>;
 type ResultSync<T, E> = Success<T> | Failure<E>;
 type Success<T> = readonly [T, null];
 
-export function tryCatch<T, E = Error>(operation: () => T): ResultSync<T, E>;
 export function tryCatch<T, E = Error>(operation: () => Promise<T>): ResultAsync<T, E>;
+export function tryCatch<T, E = Error>(operation: () => T): ResultSync<T, E>;
 export function tryCatch<T, E = Error>(operation: Promise<T>): ResultAsync<T, E>;
 export function tryCatch<T, E = Error>(
   operation: Operation<T>,
