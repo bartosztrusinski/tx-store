@@ -1,11 +1,10 @@
 import { getCurrentUser } from '@/lib/auth';
 
-type DalErrorType = 'unauthenticated' | 'unauthorized' | 'unknown';
+type DalErrorType = 'unauthenticated' | 'unauthorized';
 
 const defaultMessage: Record<DalErrorType, string> = {
   unauthenticated: 'You must be logged in to perform this action',
   unauthorized: 'You are not authorized to perform this action',
-  unknown: 'An unknown error occurred. Please try again',
 };
 
 export class DalError extends Error {
