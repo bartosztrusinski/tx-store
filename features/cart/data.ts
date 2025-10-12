@@ -1,10 +1,11 @@
 import 'server-only';
-import { type Cart, type CartItem, Prisma } from '@prisma/client';
+import { type Cart, Prisma, type Product } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import { cache } from 'react';
 
 import { getCurrentUser } from '@/lib/auth';
-import { db, type DbClient, dbTransaction } from '@/lib/db';
+import { requireAuth } from '@/lib/dal';
+import { db, type DbClient, dbPool, dbTransaction } from '@/lib/db';
 import { mergeArraysByKey } from '@/lib/utils/merge-arrays-by-key';
 
 import { deleteGuestCartCookie, getGuestCartCookie, setGuestCartCookie } from './cookie';
@@ -20,17 +21,12 @@ export async function deleteCartItem(
 }
 
 export const getOrCreateCurrentUserCart = cache(async (dbClient: DbClient = db) => {
-  const user = await getCurrentUser();
-
-  if (!user) {
-    throw new Error('User not authenticated');
-  }
-
+  const user = await requireAuth();
   const currentUserCart = await getOrCreateUserCart(user.id, { id: true }, dbClient);
   return currentUserCart.id;
 });
 
-export const getOrCreateGuestCart = cache(async (dbClient: DbClient = db) => {
+export const getOrCreateGuestCart = cache(async (dbClient: DbClient = dbPool) => {
   const guestCartSessionId = await getGuestCartCookie();
   const newSessionId = randomUUID();
 
@@ -61,7 +57,7 @@ const getOrCreateUserCart = cache(
   async <T extends Prisma.CartSelect>(
     userId: NonNullable<Cart['userId']>,
     select: T,
-    dbClient: DbClient = db,
+    dbClient: DbClient = dbPool,
   ) => {
     return await dbClient.cart.upsert({
       create: { userId },
@@ -74,7 +70,7 @@ const getOrCreateUserCart = cache(
 
 export const getCurrentCartItem = cache(
   async <T extends Prisma.CartItemSelect>(
-    productId: CartItem['productId'],
+    productSlug: Product['slug'],
     select: T,
     dbClient: DbClient = db,
   ) => {
@@ -91,7 +87,7 @@ export const getCurrentCartItem = cache(
 
     return await dbClient.cartItem.findFirst({
       select,
-      where: { cart: cartIdentifier, productId },
+      where: { cart: cartIdentifier, product: { slug: productSlug } },
     });
   },
 );
