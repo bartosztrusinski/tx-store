@@ -3,8 +3,8 @@ import { getCurrentUser } from '@/lib/auth';
 type DalErrorType = 'unauthenticated' | 'unauthorized';
 
 const defaultMessage: Record<DalErrorType, string> = {
-  unauthenticated: 'You must be logged in to perform this action',
-  unauthorized: 'You are not authorized to perform this action',
+  unauthenticated: 'You must be logged in to perform this action.',
+  unauthorized: 'You are not authorized to perform this action.',
 };
 
 export class DalError extends Error {

@@ -16,15 +16,15 @@ import {
   getOrCreateGuestCart,
   upsertCartItem,
 } from './data';
-import { setCartItemSchema } from './schemas';
+import { setCartItemQuantitySchema } from './schemas';
 
 export async function setCartItemQuantity(
   quantity: CartItem['quantity'],
   productSlug: Product['slug'],
-): Promise<ActionResponse<typeof setCartItemSchema>> {
+): Promise<ActionResponse<typeof setCartItemQuantitySchema>> {
   const [result, error] = await tryCatch(
-    async (): Promise<ActionResponse<typeof setCartItemSchema>> => {
-      const validationResult = setCartItemSchema.safeParse({ productSlug, quantity });
+    async (): Promise<ActionResponse<typeof setCartItemQuantitySchema>> => {
+      const validationResult = setCartItemQuantitySchema.safeParse({ productSlug, quantity });
 
       if (!validationResult.success) {
         const { fieldErrors } = validationResult.error.flatten();
@@ -51,31 +51,33 @@ export async function setCartItemQuantity(
         throw new Error('Could not find or create user cart.', { cause: error });
       }
 
-      return await dbTransaction(async (tx): Promise<ActionResponse<typeof setCartItemSchema>> => {
-        const product = await getProductBySlug(productSlug, { id: true, stock: true }, tx);
+      return await dbTransaction(
+        async (tx): Promise<ActionResponse<typeof setCartItemQuantitySchema>> => {
+          const product = await getProductBySlug(productSlug, { id: true, stock: true }, tx);
 
-        if (!product) {
-          return {
-            isSuccess: false,
-            message: 'Could not find that product. Please refresh and try again.',
-          };
-        }
+          if (!product) {
+            return {
+              isSuccess: false,
+              message: 'Could not find that product. Please refresh and try again.',
+            };
+          }
 
-        if (quantity > product.stock) {
-          return {
-            isSuccess: false,
-            message: `Only ${product.stock} left in stock. Please adjust the quantity.`,
-          };
-        }
+          if (quantity > product.stock) {
+            return {
+              isSuccess: false,
+              message: `Only ${product.stock} left in stock. Please adjust the quantity.`,
+            };
+          }
 
-        if (quantity === 0) {
-          await deleteCartItem({ cartId_productId: { cartId, productId: product.id } }, tx);
-        } else {
-          await upsertCartItem({ cartId, productId: product.id, quantity }, tx);
-        }
+          if (quantity === 0) {
+            await deleteCartItem({ cartId_productId: { cartId, productId: product.id } }, tx);
+          } else {
+            await upsertCartItem({ cartId, productId: product.id, quantity }, tx);
+          }
 
-        return { isSuccess: true, message: 'Cart updated successfully.' };
-      });
+          return { isSuccess: true, message: 'Cart updated successfully.' };
+        },
+      );
     },
   );
 

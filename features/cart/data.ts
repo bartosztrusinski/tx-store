@@ -94,18 +94,16 @@ export const getCurrentCartItem = cache(
 
 export async function mergeCurrentUserAndGuestCarts(userId: NonNullable<Cart['userId']>) {
   const itemFields = {
-    items: {
-      select: {
-        createdAt: true,
-        product: { select: { stock: true } },
-        productId: true,
-        quantity: true,
-      },
+    select: {
+      createdAt: true,
+      product: { select: { stock: true } },
+      productId: true,
+      quantity: true,
     },
-  } satisfies Prisma.CartSelect;
+  } satisfies Prisma.CartSelect['items'];
 
   await dbTransaction(async (tx) => {
-    const guestCart = await getGuestCart(itemFields, tx);
+    const guestCart = await getGuestCart({ items: itemFields }, tx);
 
     if (!guestCart) {
       return;
@@ -116,7 +114,7 @@ export async function mergeCurrentUserAndGuestCarts(userId: NonNullable<Cart['us
       return;
     }
 
-    const userCart = await getOrCreateUserCart(userId, { id: true, ...itemFields }, tx);
+    const userCart = await getOrCreateUserCart(userId, { id: true, items: itemFields }, tx);
     const mergedCartItems = mergeArraysByKey(
       userCart.items,
       guestCart.items,
