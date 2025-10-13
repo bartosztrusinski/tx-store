@@ -8,7 +8,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const product = await getProductBySlug(slug, {
     category: true,
     description: true,
-    id: true,
     images: true,
     name: true,
     price: true,
@@ -19,5 +18,5 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     notFound();
   }
 
-  return <ProductDetail product={product} />;
+  return <ProductDetail product={{ ...product, slug }} />;
 }

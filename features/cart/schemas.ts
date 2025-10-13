@@ -1,10 +1,6 @@
 import z from 'zod';
 
 export const setCartItemSchema = z.object({
-  path: z.string({
-    invalid_type_error: 'Path must be a string.',
-    required_error: 'Path was not provided.',
-  }),
   productSlug: z
     .string({
       invalid_type_error: 'Product slug must be a string.',

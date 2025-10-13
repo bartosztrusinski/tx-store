@@ -4,18 +4,18 @@ import { getCurrentCartItem } from '../data';
 import { AddToCartControl } from './add-to-cart-control';
 
 type Props = {
-  productId: Product['id'];
+  productSlug: Product['slug'];
   productStock: Product['stock'];
 };
 
-export async function AddToCartWrapper({ productId, productStock }: Props) {
-  const cartItem = await getCurrentCartItem(productId, { quantity: true });
+export async function AddToCartWrapper({ productSlug, productStock }: Props) {
+  const cartItem = await getCurrentCartItem(productSlug, { quantity: true });
 
   return (
     <AddToCartControl
-      cartQuantity={cartItem?.quantity ?? 0}
-      productId={productId}
-      productStock={productStock}
+      initialQuantity={cartItem?.quantity ?? 0}
+      productSlug={productSlug}
+      stock={productStock}
     />
   );
 }

@@ -7,7 +7,10 @@ import { ProductImageGallery } from './product-image-gallery';
 import { ProductPrice } from './product-price';
 
 type Props = {
-  product: Pick<Product, 'category' | 'stock' | 'images' | 'name' | 'price' | 'description' | 'id'>;
+  product: Pick<
+    Product,
+    'category' | 'stock' | 'images' | 'name' | 'price' | 'description' | 'slug'
+  >;
 };
 
 export function ProductDetail({ product }: Props) {
@@ -46,7 +49,7 @@ export function ProductDetail({ product }: Props) {
             </span>
           </div>
           <div className='mt-4'>
-            <AddToCartWrapper productId={product.id} productStock={product.stock} />
+            <AddToCartWrapper productSlug={product.slug} productStock={product.stock} />
           </div>
         </Card>
       </section>

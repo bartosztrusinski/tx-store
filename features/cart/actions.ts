@@ -1,12 +1,14 @@
 'use server';
 
-import { type CartItem } from '@prisma/client';
+import { type CartItem, type Product } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
-import { getProductById } from '@/features/product/data';
-import { getCurrentUser } from '@/lib/auth';
+import { getProductBySlug } from '@/features/product/data';
+import { DalError, isUnauthenticated } from '@/lib/dal';
 import { dbTransaction } from '@/lib/db';
 import { type ActionResponse } from '@/lib/types';
+import { splitByKeys } from '@/lib/utils/split-by-keys';
+import { tryCatch } from '@/lib/utils/try-catch';
 
 import {
   deleteCartItem,
@@ -14,35 +16,85 @@ import {
   getOrCreateGuestCart,
   upsertCartItem,
 } from './data';
+import { setCartItemSchema } from './schemas';
 
-export async function setCartItem(
-  productId: CartItem['productId'],
+export async function setCartItemQuantity(
   quantity: CartItem['quantity'],
-  path: string,
-): Promise<ActionResponse> {
-  return await dbTransaction(async (tx) => {
-    const currentUser = await getCurrentUser();
-    const cartId =
-      currentUser ? await getOrCreateCurrentUserCart(tx) : await getOrCreateGuestCart(tx);
+  productSlug: Product['slug'],
+): Promise<ActionResponse<typeof setCartItemSchema>> {
+  const [result, error] = await tryCatch(
+    async (): Promise<ActionResponse<typeof setCartItemSchema>> => {
+      const validationResult = setCartItemSchema.safeParse({ productSlug, quantity });
 
-    if (quantity <= 0) {
-      await deleteCartItem({ cartId_productId: { cartId, productId } }, tx);
-      revalidatePath(path);
-      return { isSuccess: true };
-    }
+      if (!validationResult.success) {
+        const { fieldErrors } = validationResult.error.flatten();
+        const [systemErrors, userErrors] = splitByKeys(fieldErrors, ['productSlug']);
+        const isSystemError = Object.values(systemErrors).some((errs) => Array.isArray(errs));
 
-    const product = await getProductById(productId, { stock: true }, tx);
+        if (isSystemError) {
+          throw new Error(
+            `Input validation error: ${Object.values(systemErrors).flat().join(' ')}`,
+          );
+        }
 
-    if (!product) {
-      return { isSuccess: false, message: 'Product not found' };
-    }
+        return {
+          fieldErrors: userErrors,
+          isSuccess: false,
+          message: 'Validation failed. Please check the form for errors.',
+        };
+      }
 
-    if (product.stock < quantity) {
-      return { isSuccess: false, message: 'Not enough stock available' };
-    }
+      const [userCartId, error] = await tryCatch(getOrCreateCurrentUserCart);
+      const cartId = userCartId ?? (isUnauthenticated(error) ? await getOrCreateGuestCart() : null);
 
-    await upsertCartItem({ cartId, productId, quantity }, tx);
-    revalidatePath(path);
-    return { isSuccess: true };
-  });
+      if (!cartId) {
+        throw new Error('Could not find or create user cart.', { cause: error });
+      }
+
+      return await dbTransaction(async (tx): Promise<ActionResponse<typeof setCartItemSchema>> => {
+        const product = await getProductBySlug(productSlug, { id: true, stock: true }, tx);
+
+        if (!product) {
+          return {
+            isSuccess: false,
+            message: 'Could not find that product. Please refresh and try again.',
+          };
+        }
+
+        if (quantity > product.stock) {
+          return {
+            isSuccess: false,
+            message: `Only ${product.stock} left in stock. Please adjust the quantity.`,
+          };
+        }
+
+        if (quantity === 0) {
+          await deleteCartItem({ cartId_productId: { cartId, productId: product.id } }, tx);
+        } else {
+          await upsertCartItem({ cartId, productId: product.id, quantity }, tx);
+        }
+
+        return { isSuccess: true, message: 'Cart updated successfully.' };
+      });
+    },
+  );
+
+  if (error) {
+    console.error(error);
+
+    return {
+      isSuccess: false,
+      message:
+        error instanceof DalError ?
+          error.message
+        : 'Could not update your cart. Please try again in a moment.',
+    };
+  }
+
+  if (result.isSuccess) {
+    // TODO optimize revalidation
+    revalidatePath('/');
+  }
+
+  return result;
 }
