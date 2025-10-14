@@ -1,13 +1,18 @@
 'use server';
 
+import { APIError } from 'better-auth/api';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { mergeCurrentUserAndGuestCarts } from '@/features/cart/data';
 import { auth } from '@/lib/auth';
+import { DalError } from '@/lib/dal';
 import { type ActionResponse } from '@/lib/types';
+import { tryCatch } from '@/lib/utils/try-catch';
 
 import { loginSchema, registerSchema } from './schemas';
+
+const DEFAULT_REDIRECT_PATH = '/';
 
 export async function logIn(
   _: ActionResponse<typeof loginSchema>,
@@ -26,28 +31,48 @@ export async function logIn(
     };
   }
 
-  const { callbackUrl, email, password } = validationResult.data;
+  const { callbackPath, email, password } = validationResult.data;
 
-  try {
-    const { user } = await auth.api.signInEmail({
-      body: { email, password },
-    });
+  const [, error] = await tryCatch(async () => {
+    const { user } = await auth.api.signInEmail({ body: { email, password } });
     await mergeCurrentUserAndGuestCarts(user.id);
-  } catch (error) {
+  });
+
+  if (error) {
+    console.error(error);
+
     return {
       isSuccess: false,
       message:
-        error instanceof Error ?
+        error instanceof APIError || error instanceof DalError ?
           error.message
-        : 'An error occurred while logging in. Please try again later.',
+        : 'Could not log you in. Please try again in a moment.',
     };
   }
 
-  redirect(callbackUrl);
+  redirect(callbackPath ?? DEFAULT_REDIRECT_PATH);
 }
 
-export async function logOut() {
-  await auth.api.signOut({ headers: await headers() });
+export async function logOut(): Promise<ActionResponse> {
+  const headersList = await headers();
+  const [result, error] = await tryCatch(() => auth.api.signOut({ headers: headersList }));
+
+  if (error || !result.success) {
+    console.error(error);
+
+    return {
+      isSuccess: false,
+      message:
+        error instanceof DalError ?
+          error.message
+        : 'Could not log you out. Please try again in a moment.',
+    };
+  }
+
+  return {
+    isSuccess: true,
+    message: 'Logged out successfully',
+  };
 }
 
 export async function register(
@@ -67,22 +92,24 @@ export async function register(
     };
   }
 
-  const { callbackUrl, email, name, password } = validationResult.data;
+  const { callbackPath, email, name, password } = validationResult.data;
 
-  try {
-    const { user } = await auth.api.signUpEmail({
-      body: { email, name, password },
-    });
+  const [, error] = await tryCatch(async () => {
+    const { user } = await auth.api.signUpEmail({ body: { email, name, password } });
     await mergeCurrentUserAndGuestCarts(user.id);
-  } catch (error) {
+  });
+
+  if (error) {
+    console.error(error);
+
     return {
       isSuccess: false,
       message:
-        error instanceof Error ?
+        error instanceof APIError || error instanceof DalError ?
           error.message
-        : 'An error occurred while creating your account. Please try again later.',
+        : 'Could not sign you up. Please try again in a moment.',
     };
   }
 
-  redirect(callbackUrl);
+  redirect(callbackPath ?? DEFAULT_REDIRECT_PATH);
 }
