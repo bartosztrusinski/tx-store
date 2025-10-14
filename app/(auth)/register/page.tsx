@@ -9,17 +9,17 @@ import { getSession } from '@/lib/auth';
 import { APP_NAME } from '@/lib/constants';
 
 type Props = {
-  searchParams: Promise<{ callbackUrl?: string }>;
+  searchParams: Promise<{ callbackPath?: string }>;
 };
 
-const DEFAULT_CALLBACK_URL = '/';
+const DEFAULT_CALLBACK_PATH = '/';
 
 export default async function RegisterPage({ searchParams }: Props) {
   const session = await getSession();
-  const { callbackUrl = DEFAULT_CALLBACK_URL } = await searchParams;
+  const { callbackPath = DEFAULT_CALLBACK_PATH } = await searchParams;
 
   if (session) {
-    redirect(callbackUrl);
+    redirect(callbackPath);
   }
 
   return (
@@ -38,7 +38,7 @@ export default async function RegisterPage({ searchParams }: Props) {
         </p>
       </CardHeader>
       <CardContent>
-        <RegisterForm callbackUrl={callbackUrl} />
+        <RegisterForm callbackPath={callbackPath} />
       </CardContent>
       <CardFooter>
         <p>

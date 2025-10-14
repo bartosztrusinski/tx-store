@@ -11,10 +11,10 @@ import { logIn } from '../actions';
 import { FieldErrors } from './field-errors';
 
 type Props = {
-  callbackUrl: string;
+  callbackPath: string;
 };
 
-export function LoginForm({ callbackUrl }: Props) {
+export function LoginForm({ callbackPath }: Props) {
   const [state, action, isPending] = useActionState(logIn, { isSuccess: false });
   const id = useId();
 
@@ -27,6 +27,7 @@ export function LoginForm({ callbackUrl }: Props) {
           id={`${id}-email`}
           name='email'
           placeholder='john@doe.com'
+          required
           type='email'
         />
         <FieldErrors errors={state?.fieldErrors?.email} />
@@ -38,13 +39,13 @@ export function LoginForm({ callbackUrl }: Props) {
           id={`${id}-password`}
           name='password'
           placeholder='********'
+          required
           type='password'
         />
         <FieldErrors errors={state?.fieldErrors?.password} />
       </div>
 
-      <input name='callbackUrl' type='hidden' value={callbackUrl} />
-      <FieldErrors errors={state?.fieldErrors?.callbackUrl} />
+      <input name='callbackPath' type='hidden' value={callbackPath} />
 
       {state?.message && (
         <Alert message={state.message} variant={state.isSuccess ? 'success' : 'error'} />
