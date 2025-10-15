@@ -24,9 +24,9 @@ export async function logIn(
     const { fieldErrors, formErrors } = validationResult.error.flatten();
 
     return {
-      fieldErrors,
       isSuccess: false,
-      message: formErrors[0],
+      message: formErrors[0] ?? 'Validation failed. Please check the form for errors.',
+      validationErrors: fieldErrors,
     };
   }
 
@@ -81,9 +81,9 @@ export async function register(
     const { fieldErrors, formErrors } = validationResult.error.flatten();
 
     return {
-      fieldErrors,
       isSuccess: false,
-      message: formErrors[0],
+      message: formErrors[0] ?? 'Validation failed. Please check the form for errors.',
+      validationErrors: fieldErrors,
     };
   }
 

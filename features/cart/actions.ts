@@ -38,9 +38,9 @@ export async function setCartItemQuantity(
         }
 
         return {
-          fieldErrors: userErrors,
           isSuccess: false,
           message: 'Validation failed. Please check the form for errors.',
+          validationErrors: userErrors,
         };
       }
 

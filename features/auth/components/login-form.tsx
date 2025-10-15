@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import { logIn } from '../actions';
-import { FieldErrors } from './field-errors';
+import { ValidationErrors } from './validation-errors';
 
 type Props = {
   callbackPath: string;
@@ -30,7 +30,7 @@ export function LoginForm({ callbackPath }: Props) {
           required
           type='email'
         />
-        <FieldErrors errors={state?.fieldErrors?.email} />
+        <ValidationErrors errors={state?.validationErrors?.email} />
       </div>
       <div className='flex flex-col gap-1'>
         <Label htmlFor={`${id}-password`}>Password</Label>
@@ -42,7 +42,7 @@ export function LoginForm({ callbackPath }: Props) {
           required
           type='password'
         />
-        <FieldErrors errors={state?.fieldErrors?.password} />
+        <ValidationErrors errors={state?.validationErrors?.password} />
       </div>
 
       <input name='callbackPath' type='hidden' value={callbackPath} />
