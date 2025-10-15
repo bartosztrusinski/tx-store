@@ -20,9 +20,14 @@ export async function deleteCartItem(
   });
 }
 
-export const getOrCreateCurrentUserCart = cache(async (dbClient: DbClient = db) => {
+export const getOrCreateCurrentUserCart = cache(async (dbClient: DbClient = dbPool) => {
   const user = await requireAuth();
-  const currentUserCart = await getOrCreateUserCart(user.id, { id: true }, dbClient);
+  const currentUserCart = await dbClient.cart.upsert({
+    create: { userId: user.id },
+    select: { id: true },
+    update: {},
+    where: { userId: user.id },
+  });
   return currentUserCart.id;
 });
 
@@ -53,22 +58,20 @@ export const getOrCreateGuestCart = cache(async (dbClient: DbClient = dbPool) =>
   return cart.id;
 });
 
-const getOrCreateUserCart = cache(
+const getUserCart = cache(
   async <T extends Prisma.CartSelect>(
     userId: NonNullable<Cart['userId']>,
     select: T,
-    dbClient: DbClient = dbPool,
+    dbClient: DbClient = db,
   ) => {
-    return await dbClient.cart.upsert({
-      create: { userId },
+    return await dbClient.cart.findUnique({
       select,
-      update: {},
       where: { userId },
     });
   },
 );
 
-export const getCurrentCartItem = cache(
+export const getCartItem = cache(
   async <T extends Prisma.CartItemSelect>(
     productSlug: Product['slug'],
     select: T,
@@ -92,7 +95,7 @@ export const getCurrentCartItem = cache(
   },
 );
 
-export async function mergeCurrentUserAndGuestCarts(userId: NonNullable<Cart['userId']>) {
+export async function mergeUserAndGuestCarts(userId: NonNullable<Cart['userId']>) {
   const itemFields = {
     select: {
       createdAt: true,
@@ -114,7 +117,13 @@ export async function mergeCurrentUserAndGuestCarts(userId: NonNullable<Cart['us
       return;
     }
 
-    const userCart = await getOrCreateUserCart(userId, { id: true, items: itemFields }, tx);
+    const userCart = await getUserCart(userId, { id: true, items: itemFields }, tx);
+
+    if (!userCart) {
+      await assignGuestCartToUser(userId, tx);
+      return;
+    }
+
     const mergedCartItems = mergeArraysByKey(
       userCart.items,
       guestCart.items,
@@ -141,6 +150,20 @@ export async function upsertCartItem(
     update: item,
     where: { cartId_productId: { cartId, productId } },
   });
+}
+
+async function assignGuestCartToUser(userId: NonNullable<Cart['userId']>, dbClient: DbClient = db) {
+  const guestCartSessionId = await getGuestCartCookie();
+
+  if (!guestCartSessionId) {
+    throw new Error('No guest cart session ID found');
+  }
+
+  await dbClient.cart.update({
+    data: { sessionId: null, userId },
+    where: { sessionId: guestCartSessionId },
+  });
+  await deleteGuestCartCookie();
 }
 
 async function deleteGuestCart(dbClient: DbClient = db) {
