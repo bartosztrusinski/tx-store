@@ -21,11 +21,10 @@ export async function logIn(
   const validationResult = loginSchema.safeParse(data);
 
   if (!validationResult.success) {
-    const { fieldErrors, formErrors } = validationResult.error.flatten();
+    const { fieldErrors } = validationResult.error.flatten();
 
     return {
       isSuccess: false,
-      message: formErrors[0] ?? 'Validation failed. Please check the form for errors.',
       validationErrors: fieldErrors,
     };
   }
@@ -78,11 +77,10 @@ export async function register(
   const validationResult = registerSchema.safeParse(data);
 
   if (!validationResult.success) {
-    const { fieldErrors, formErrors } = validationResult.error.flatten();
+    const { fieldErrors } = validationResult.error.flatten();
 
     return {
       isSuccess: false,
-      message: formErrors[0] ?? 'Validation failed. Please check the form for errors.',
       validationErrors: fieldErrors,
     };
   }
