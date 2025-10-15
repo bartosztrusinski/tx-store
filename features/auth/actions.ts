@@ -4,7 +4,6 @@ import { APIError } from 'better-auth/api';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-import { mergeCurrentUserAndGuestCarts } from '@/features/cart/data';
 import { auth } from '@/lib/auth';
 import { DalError } from '@/lib/dal';
 import { type ActionResponse } from '@/lib/types';
@@ -32,11 +31,7 @@ export async function logIn(
   }
 
   const { callbackPath, email, password } = validationResult.data;
-
-  const [, error] = await tryCatch(async () => {
-    const { user } = await auth.api.signInEmail({ body: { email, password } });
-    await mergeCurrentUserAndGuestCarts(user.id);
-  });
+  const [, error] = await tryCatch(() => auth.api.signInEmail({ body: { email, password } }));
 
   if (error) {
     console.error(error);
@@ -93,11 +88,7 @@ export async function register(
   }
 
   const { callbackPath, email, name, password } = validationResult.data;
-
-  const [, error] = await tryCatch(async () => {
-    const { user } = await auth.api.signUpEmail({ body: { email, name, password } });
-    await mergeCurrentUserAndGuestCarts(user.id);
-  });
+  const [, error] = await tryCatch(() => auth.api.signUpEmail({ body: { email, name, password } }));
 
   if (error) {
     console.error(error);

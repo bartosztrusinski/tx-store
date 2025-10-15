@@ -5,11 +5,27 @@ import { nextCookies } from 'better-auth/next-js';
 import { headers } from 'next/headers';
 import { cache } from 'react';
 
+import { mergeUserAndGuestCarts } from '@/features/cart/data';
+import { tryCatch } from '@/lib/utils/try-catch';
+
 import { dbPool } from './db';
 
 export const auth = betterAuth({
   baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
   database: prismaAdapter(dbPool, { provider: 'postgresql' }),
+  databaseHooks: {
+    session: {
+      create: {
+        after: async ({ userId }) => {
+          const [, error] = await tryCatch(() => mergeUserAndGuestCarts(userId));
+
+          if (error) {
+            console.error(error);
+          }
+        },
+      },
+    },
+  },
   emailAndPassword: { enabled: true },
   plugins: [nextCookies()],
 });
