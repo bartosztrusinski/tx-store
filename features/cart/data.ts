@@ -1,5 +1,6 @@
 import 'server-only';
 import { type Cart, Prisma, type Product } from '@prisma/client';
+import { unstable_cache } from 'next/cache';
 import { randomUUID } from 'node:crypto';
 import { cache } from 'react';
 
@@ -88,10 +89,16 @@ export const getCartItem = cache(
       return null;
     }
 
-    return await dbClient.cartItem.findFirst({
-      select,
-      where: { cart: cartIdentifier, product: { slug: productSlug } },
-    });
+    return await unstable_cache(
+      async () => {
+        return await dbClient.cartItem.findFirst({
+          select,
+          where: { cart: cartIdentifier, product: { slug: productSlug } },
+        });
+      },
+      [productSlug, JSON.stringify(cartIdentifier), JSON.stringify(select)],
+      { tags: [`cart-item cart-id:${JSON.stringify(cartIdentifier)} slug:${productSlug}`] },
+    )();
   },
 );
 
