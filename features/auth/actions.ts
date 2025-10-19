@@ -5,13 +5,12 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { auth } from '@/lib/auth';
+import { DEFAULT_REDIRECT_PATH } from '@/lib/constants';
 import { DalError } from '@/lib/dal';
 import { type ActionResponse } from '@/lib/types';
 import { tryCatch } from '@/lib/utils/try-catch';
 
 import { loginSchema, registerSchema } from './schemas';
-
-const DEFAULT_REDIRECT_PATH = '/';
 
 export async function logIn(
   _: ActionResponse<typeof loginSchema>,

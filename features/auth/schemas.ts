@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
-const DEFAULT_CALLBACK_PATH = '/';
+import { DEFAULT_REDIRECT_PATH } from '@/lib/constants';
 
 const callbackPath = z
   .string({ message: 'Invalid callback path.' })
   .refine((path) => path.startsWith('/'), { message: 'Invalid callback path.' })
   .optional()
-  .catch(DEFAULT_CALLBACK_PATH);
+  .catch(DEFAULT_REDIRECT_PATH);
 
 const email = z
   .string({ message: 'Please enter a valid email address.' })

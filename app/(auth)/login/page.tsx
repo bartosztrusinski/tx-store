@@ -6,17 +6,15 @@ import { redirect } from 'next/navigation';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { LoginForm } from '@/features/auth/components/login-form';
 import { getSession } from '@/lib/auth';
-import { APP_NAME } from '@/lib/constants';
+import { APP_NAME, DEFAULT_REDIRECT_PATH } from '@/lib/constants';
 
 type Props = {
   searchParams: Promise<{ callbackPath?: string }>;
 };
 
-const DEFAULT_CALLBACK_PATH = '/';
-
 export default async function LoginPage({ searchParams }: Props) {
   const session = await getSession();
-  const { callbackPath = DEFAULT_CALLBACK_PATH } = await searchParams;
+  const { callbackPath = DEFAULT_REDIRECT_PATH } = await searchParams;
 
   if (session) {
     redirect(callbackPath);

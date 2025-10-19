@@ -1,6 +1,8 @@
 import { getSessionCookie } from 'better-auth/cookies';
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { DEFAULT_REDIRECT_PATH } from '@/lib/constants';
+
 const privateRoutes: string[] = [];
 const authRoutes = ['/login', '/register'];
 
@@ -15,7 +17,7 @@ export function middleware(request: NextRequest) {
 
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
   if (sessionCookie && isAuthRoute) {
-    return NextResponse.redirect(new URL('/', request.url));
+    return NextResponse.redirect(new URL(DEFAULT_REDIRECT_PATH, request.url));
   }
 
   return NextResponse.next();
