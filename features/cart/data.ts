@@ -1,8 +1,6 @@
 import 'server-only';
 import { type Cart, Prisma, type Product } from '@prisma/client';
-import { unstable_cache } from 'next/cache';
 import { randomUUID } from 'node:crypto';
-import { cache } from 'react';
 
 import { getCurrentUser } from '@/lib/auth';
 import { requireAuth } from '@/lib/dal';
@@ -21,7 +19,29 @@ export async function deleteCartItem(
   });
 }
 
-export const getOrCreateCurrentUserCart = cache(async (dbClient: DbClient = dbPool) => {
+export async function getCartItem<T extends Prisma.CartItemSelect>(
+  productSlug: Product['slug'],
+  select: T,
+  dbClient: DbClient = db,
+) {
+  const guestCartSessionId = await getGuestCartCookie();
+  const user = await getCurrentUser();
+  const cartIdentifier: Prisma.CartWhereInput | null =
+    user ? { userId: user.id }
+    : guestCartSessionId ? { sessionId: guestCartSessionId }
+    : null;
+
+  if (!cartIdentifier) {
+    return null;
+  }
+
+  return await dbClient.cartItem.findFirst({
+    select,
+    where: { cart: cartIdentifier, product: { slug: productSlug } },
+  });
+}
+
+export async function getOrCreateCurrentUserCart(dbClient: DbClient = dbPool) {
   const user = await requireAuth();
   const currentUserCart = await dbClient.cart.upsert({
     create: { userId: user.id },
@@ -30,9 +50,9 @@ export const getOrCreateCurrentUserCart = cache(async (dbClient: DbClient = dbPo
     where: { userId: user.id },
   });
   return currentUserCart.id;
-});
+}
 
-export const getOrCreateGuestCart = cache(async (dbClient: DbClient = dbPool) => {
+export async function getOrCreateGuestCart(dbClient: DbClient = dbPool) {
   const guestCartSessionId = await getGuestCartCookie();
   const newSessionId = randomUUID();
 
@@ -57,50 +77,18 @@ export const getOrCreateGuestCart = cache(async (dbClient: DbClient = dbPool) =>
   }
 
   return cart.id;
-});
+}
 
-const getUserCart = cache(
-  async <T extends Prisma.CartSelect>(
-    userId: NonNullable<Cart['userId']>,
-    select: T,
-    dbClient: DbClient = db,
-  ) => {
-    return await dbClient.cart.findUnique({
-      select,
-      where: { userId },
-    });
-  },
-);
-
-export const getCartItem = cache(
-  async <T extends Prisma.CartItemSelect>(
-    productSlug: Product['slug'],
-    select: T,
-    dbClient: DbClient = db,
-  ) => {
-    const guestCartSessionId = await getGuestCartCookie();
-    const user = await getCurrentUser();
-    const cartIdentifier: Prisma.CartWhereInput | null =
-      user ? { userId: user.id }
-      : guestCartSessionId ? { sessionId: guestCartSessionId }
-      : null;
-
-    if (!cartIdentifier) {
-      return null;
-    }
-
-    return await unstable_cache(
-      async () => {
-        return await dbClient.cartItem.findFirst({
-          select,
-          where: { cart: cartIdentifier, product: { slug: productSlug } },
-        });
-      },
-      [productSlug, JSON.stringify(cartIdentifier), JSON.stringify(select)],
-      { tags: [`cart-item cart-id:${JSON.stringify(cartIdentifier)} slug:${productSlug}`] },
-    )();
-  },
-);
+export async function getUserCart<T extends Prisma.CartSelect>(
+  userId: NonNullable<Cart['userId']>,
+  select: T,
+  dbClient: DbClient = db,
+) {
+  return await dbClient.cart.findUnique({
+    select,
+    where: { userId },
+  });
+}
 
 export async function mergeUserAndGuestCarts(userId: NonNullable<Cart['userId']>) {
   const itemFields = {
@@ -184,20 +172,18 @@ async function deleteGuestCart(dbClient: DbClient = db) {
   await deleteGuestCartCookie();
 }
 
-const getGuestCart = cache(
-  async <T extends Prisma.CartSelect>(select: T, dbClient: DbClient = db) => {
-    const guestCartSessionId = await getGuestCartCookie();
+async function getGuestCart<T extends Prisma.CartSelect>(select: T, dbClient: DbClient = db) {
+  const guestCartSessionId = await getGuestCartCookie();
 
-    if (!guestCartSessionId) {
-      return null;
-    }
+  if (!guestCartSessionId) {
+    return null;
+  }
 
-    return await dbClient.cart.findUnique({
-      select,
-      where: { sessionId: guestCartSessionId },
-    });
-  },
-);
+  return await dbClient.cart.findUnique({
+    select,
+    where: { sessionId: guestCartSessionId },
+  });
+}
 
 async function upsertCartItems(items: Prisma.CartItemCreateManyInput[], dbClient: DbClient = db) {
   await dbClient.$executeRaw`
