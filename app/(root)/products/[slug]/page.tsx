@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { ProductDetail } from '@/features/product/components/product-detail';
 import { getProductBySlug } from '@/features/product/data';
 
-export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ProductPage({ params }: PageProps<'/products/[slug]'>) {
   const { slug } = await params;
   const product = await getProductBySlug(slug, {
     category: true,
