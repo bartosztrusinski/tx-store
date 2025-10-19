@@ -93,8 +93,7 @@ export async function setCartItemQuantity(
   }
 
   if (result.isSuccess) {
-    // TODO optimize revalidation
-    revalidatePath('/');
+    revalidatePath(`/products/${productSlug}`);
   }
 
   return result;
