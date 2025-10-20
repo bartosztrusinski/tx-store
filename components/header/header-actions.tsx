@@ -1,8 +1,9 @@
-import { LogIn, ShoppingCart } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 import { ThemeProvider } from 'next-themes';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
+import { CartDropdown } from '@/features/cart/components/cart-dropdown';
 import { getCurrentUser } from '@/lib/auth';
 
 import { HeaderActionsDrawer } from './header-actions-drawer';
@@ -21,9 +22,7 @@ export async function HeaderActions() {
             <ThemeSwitcher />
           </li>
           <li>
-            <Button variant='ghost'>
-              <ShoppingCart /> Cart
-            </Button>
+            <CartDropdown />
           </li>
           <li>
             {user ?
