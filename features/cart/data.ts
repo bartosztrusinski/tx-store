@@ -41,6 +41,27 @@ export async function getCartItem<T extends Prisma.CartItemSelect>(
   });
 }
 
+export async function getCartItems<T extends Prisma.CartItemSelect>(
+  select: T,
+  dbClient: DbClient = db,
+) {
+  const guestCartSessionId = await getGuestCartCookie();
+  const user = await getCurrentUser();
+  const cartIdentifier: Prisma.CartWhereInput | null =
+    user ? { userId: user.id }
+    : guestCartSessionId ? { sessionId: guestCartSessionId }
+    : null;
+
+  if (!cartIdentifier) {
+    return null;
+  }
+
+  return await dbClient.cartItem.findMany({
+    select,
+    where: { cart: cartIdentifier },
+  });
+}
+
 export async function getOrCreateCurrentUserCart(dbClient: DbClient = dbPool) {
   const user = await requireAuth();
   const currentUserCart = await dbClient.cart.upsert({
