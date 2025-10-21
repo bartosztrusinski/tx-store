@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -21,65 +22,86 @@ export async function CartDropdown() {
     quantity: true,
   });
   const sortedCartItems = cartItems?.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-  const isCartEmpty = cartItems?.length === 0;
+  const hasItems = Array.isArray(cartItems) && cartItems.length > 0;
   const cartTotal = cartItems?.reduce(
-    (acc, item) => {
-      acc.quantity += item.quantity;
-      acc.price += Number(item.product.price) * item.quantity;
-      return acc;
-    },
+    (total, item) => ({
+      price: total.price + Number(item.product.price) * item.quantity,
+      quantity: total.quantity + item.quantity,
+    }),
     { price: 0, quantity: 0 },
-  );
+  ) ?? { price: 0, quantity: 0 };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button className='relative' variant='ghost'>
           <ShoppingCart />
-          <span className='absolute right-1 top-1 w-4 rounded-md bg-primary text-xs font-medium text-primary-foreground'>
-            {cartTotal?.quantity ?? 0}
-          </span>
+          {hasItems && (
+            <span className='absolute right-1 top-1 w-4 rounded-md bg-primary text-xs font-medium text-primary-foreground'>
+              {cartTotal.quantity}
+            </span>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className='mx-1 min-w-60'>
         <DropdownMenuLabel className='flex items-center justify-between gap-3 text-base'>
-          <span>My cart {!isCartEmpty && `(${cartTotal?.quantity ?? 0})`}</span>
           <span>
-            Total: <ProductPrice price={cartTotal?.price ?? 0} size='sm' />
+            My cart{' '}
+            {hasItems && (
+              <span className='text-sm text-muted-foreground'>({cartTotal.quantity})</span>
+            )}
           </span>
+          {hasItems && (
+            <span>
+              Total: <ProductPrice price={cartTotal.price} size='sm' />
+            </span>
+          )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {isCartEmpty ?
-          <p className='p-2'>The cart is empty.</p>
-        : <>
-            {sortedCartItems?.map((item) => (
-              <Link className='flex gap-3 p-2' href={`/product/${item.product.slug}`} key={item.id}>
-                <Image
-                  alt={item.product.name}
-                  className='rounded'
-                  height={56}
-                  src={item.product.images[0] ?? '/images/products/default.png'}
-                  width={56}
-                />
-                <div className='grow'>
-                  <p className='pb-1 font-medium'>{item.product.name}</p>
-                  <div className='flex items-center justify-between'>
-                    <p className='text-sm text-muted-foreground'>Quantity: {item.quantity}</p>
-                    <ProductPrice price={Number(item.product.price) * item.quantity} size='sm' />
-                  </div>
-                </div>
-              </Link>
-            ))}
+        {hasItems ?
+          <>
+            <div className='max-h-96 overflow-y-auto'>
+              {sortedCartItems?.map((item) => (
+                <DropdownMenuItem asChild className='flex cursor-pointer gap-3 p-2' key={item.id}>
+                  <Link className='mb-1 mr-1' href={`/products/${item.product.slug}`}>
+                    {item.product.images[0] && (
+                      <Image
+                        alt={item.product.name}
+                        className='rounded-sm'
+                        height={56}
+                        src={item.product.images[0]}
+                        width={56}
+                      />
+                    )}
+                    <div className='grow'>
+                      <p className='pb-1 font-medium'>{item.product.name}</p>
+                      <div className='flex items-center justify-between'>
+                        <p className='text-sm text-muted-foreground'>Quantity: {item.quantity}</p>
+                        <ProductPrice
+                          price={Number(item.product.price) * item.quantity}
+                          size='sm'
+                        />
+                      </div>
+                    </div>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </div>
             <DropdownMenuSeparator />
             <div className='p-2'>
-              <Button asChild>
-                <Link className='w-full' href='/cart'>
-                  View Cart
-                </Link>
-              </Button>
+              <DropdownMenuItem asChild>
+                <Button asChild>
+                  <Link
+                    className='w-full cursor-pointer focus:bg-primary focus:text-primary-foreground focus-visible:hover:ring-0'
+                    href='/'
+                  >
+                    View Cart
+                  </Link>
+                </Button>
+              </DropdownMenuItem>
             </div>
           </>
-        }
+        : <p className='justify-center p-4 text-center'>The cart is empty.</p>}
       </DropdownMenuContent>
     </DropdownMenu>
   );
