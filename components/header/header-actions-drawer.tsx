@@ -1,11 +1,10 @@
-import { EllipsisVertical, ShoppingCart, User } from 'lucide-react';
+import { EllipsisVertical, User } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
   Drawer,
   DrawerClose,
   DrawerContent,
-  DrawerDescription,
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
@@ -24,21 +23,15 @@ export function HeaderActionsDrawer() {
         </Button>
       </DrawerTrigger>
       <DrawerContent
-        className='inset-y-2 left-auto right-2 m-0 w-full max-w-72 rounded-lg px-4 after:hidden'
+        className='inset-y-2 left-auto right-2 m-0 w-[calc(100%-theme(spacing.4))] max-w-64 rounded-lg after:hidden'
         handleDirection='left'
         style={{ '--initial-transform': 'calc(100% + 0.5rem)' } as React.CSSProperties}
       >
         <DrawerHeader>
           <DrawerTitle>Menu</DrawerTitle>
-          <DrawerDescription />
         </DrawerHeader>
         <nav aria-label='User actions'>
-          <ul className='flex flex-col gap-3 p-2' role='menubar'>
-            <li>
-              <Button className='w-full' variant='ghost'>
-                <ShoppingCart /> Cart
-              </Button>
-            </li>
+          <ul className='flex flex-col gap-3 p-2 px-4' role='menubar'>
             <li>
               <Button className='w-full'>
                 <User /> Sign In

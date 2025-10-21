@@ -62,8 +62,12 @@ export async function CartDropdown() {
           <>
             <div className='max-h-96 overflow-y-auto'>
               {sortedCartItems?.map((item) => (
-                <DropdownMenuItem asChild className='flex cursor-pointer gap-3 p-2' key={item.id}>
-                  <Link className='mb-1 mr-1' href={`/products/${item.product.slug}`}>
+                <DropdownMenuItem
+                  asChild
+                  className='my-1 mr-1 cursor-pointer gap-3 p-2'
+                  key={item.id}
+                >
+                  <Link href={`/products/${item.product.slug}`}>
                     {item.product.images[0] && (
                       <Image
                         alt={item.product.name}
@@ -74,9 +78,11 @@ export async function CartDropdown() {
                       />
                     )}
                     <div className='grow'>
-                      <p className='pb-1 font-medium'>{item.product.name}</p>
+                      <p className='font-medium'>{item.product.name}</p>
                       <div className='flex items-center justify-between'>
-                        <p className='text-sm text-muted-foreground'>Quantity: {item.quantity}</p>
+                        <span className='text-sm text-muted-foreground'>
+                          Quantity: {item.quantity}
+                        </span>
                         <ProductPrice
                           price={Number(item.product.price) * item.quantity}
                           size='sm'
