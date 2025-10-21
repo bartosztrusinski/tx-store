@@ -3,6 +3,7 @@ import { ThemeProvider } from 'next-themes';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
+import { CartDrawer } from '@/features/cart/components/cart-drawer';
 import { CartDropdown } from '@/features/cart/components/cart-dropdown';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -36,7 +37,8 @@ export async function HeaderActions() {
           </li>
         </ul>
       </nav>
-      <div className='sm:hidden'>
+      <div className='flex items-center sm:hidden'>
+        <CartDrawer />
         <HeaderActionsDrawer />
       </div>
     </ThemeProvider>
