@@ -1,6 +1,6 @@
-import { type User } from '@prisma/client';
-import { LogOut, UserIcon } from 'lucide-react';
+import { LogIn, LogOut, User, UserIcon, UserPlus } from 'lucide-react';
 import Link from 'next/link';
+import { type ComponentProps, type ReactNode } from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -13,45 +13,85 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { logOut } from '@/features/auth/actions';
+import { getCurrentUser } from '@/lib/auth';
 
-type Props = {
-  email: User['email'];
-  image?: User['image'];
-  name: User['name'];
-};
+export async function UserAvatar(props: ComponentProps<typeof Avatar>) {
+  const user = await getCurrentUser();
 
-export function UserMenu({ email, image, name }: Props) {
+  return (
+    <Avatar {...props}>
+      {user ?
+        <>
+          <AvatarImage alt={`Avatar of ${user.name}`} src={user.image ?? undefined} />
+          <AvatarFallback>{user.name[0]?.toUpperCase()}</AvatarFallback>
+        </>
+      : <AvatarFallback className='bg-inherit'>
+          <User />
+        </AvatarFallback>
+      }
+    </Avatar>
+  );
+}
+
+export async function UserMenu({ children }: { children: ReactNode }) {
+  const user = await getCurrentUser();
+
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
-        <Avatar className='transition-transform will-change-transform hover:scale-105'>
-          <AvatarImage alt={`Avatar of ${name}`} src={image ?? undefined} />
-          <AvatarFallback>{name[0]?.toUpperCase()}</AvatarFallback>
-        </Avatar>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align='end' className='w-48'>
+      {children}
+      <DropdownMenuContent className='w-44'>
         <DropdownMenuLabel className='flex flex-col leading-snug'>
-          <span>{name}</span>
-          <span className='overflow-hidden text-ellipsis whitespace-nowrap font-normal text-muted-foreground'>
-            {email}
-          </span>
+          {user ?
+            <>
+              {user.name}
+              <span className='overflow-hidden text-ellipsis whitespace-nowrap font-normal text-muted-foreground'>
+                {user.email}
+              </span>
+            </>
+          : 'Your Account'}
         </DropdownMenuLabel>
-        <DropdownMenuItem asChild className='cursor-pointer'>
-          <Link href='/profile'>
-            <UserIcon />
-            Profile
-          </Link>
-        </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild className='p-0'>
-          <form action={logOut}>
-            <Button className='h-auto w-full justify-start px-2 py-1.5' variant='ghost'>
-              <LogOut />
-              Log Out
-            </Button>
-          </form>
-        </DropdownMenuItem>
+        {user ?
+          <>
+            <DropdownMenuItem asChild>
+              <Link href='/profile'>
+                <UserIcon />
+                Profile
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className='p-0'>
+              <form action={logOut}>
+                <Button
+                  className='h-auto w-full justify-start px-2 py-1.5 font-normal'
+                  type='submit'
+                  variant='ghost'
+                >
+                  <LogOut />
+                  Log Out
+                </Button>
+              </form>
+            </DropdownMenuItem>
+          </>
+        : <>
+            <DropdownMenuItem asChild>
+              <Link href='/login'>
+                <LogIn />
+                Log In
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href='/register'>
+                <UserPlus />
+                Register
+              </Link>
+            </DropdownMenuItem>
+          </>
+        }
       </DropdownMenuContent>
     </DropdownMenu>
   );
+}
+
+export function UserMenuTrigger(props: ComponentProps<typeof DropdownMenuTrigger>) {
+  return <DropdownMenuTrigger {...props} />;
 }
