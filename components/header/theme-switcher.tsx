@@ -2,9 +2,8 @@
 
 import { type LucideIcon, Monitor, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
+import { type ComponentProps, type ReactNode, useEffect, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -28,14 +27,19 @@ const themes: Theme[] = [
   { Icon: Monitor, label: 'System', mode: 'system' },
 ];
 
-type Props = {
-  withText?: boolean;
-};
+export function ThemeIcon(props: ComponentProps<LucideIcon>) {
+  const { Icon } = useCurrentTheme();
+  return <Icon {...props} />;
+}
 
-export function ThemeSwitcher({ withText = false }: Props) {
+export function ThemeLabel(props: ComponentProps<'span'>) {
+  const { label } = useCurrentTheme();
+  return <span {...props}>{label}</span>;
+}
+
+export function ThemeSwitcher({ children }: { children: ReactNode }) {
   const [isMounted, setIsMounted] = useState(false);
   const { setTheme, theme: activeTheme } = useTheme();
-  const { Icon, label } = themes.find(({ mode }) => mode === activeTheme) ?? defaultTheme;
 
   useEffect(() => {
     setIsMounted(true);
@@ -47,13 +51,7 @@ export function ThemeSwitcher({ withText = false }: Props) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button className='flex' size={withText ? 'default' : 'icon'} variant='ghost'>
-          {withText && label}
-          <Icon />
-          <span className='sr-only'>Toggle theme</span>
-        </Button>
-      </DropdownMenuTrigger>
+      {children}
       <DropdownMenuContent className='mx-1'>
         <DropdownMenuLabel>Theme</DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -70,4 +68,13 @@ export function ThemeSwitcher({ withText = false }: Props) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
+}
+
+export function ThemeSwitcherTrigger(props: ComponentProps<typeof DropdownMenuTrigger>) {
+  return <DropdownMenuTrigger {...props} />;
+}
+
+function useCurrentTheme(): Theme {
+  const { theme: activeTheme } = useTheme();
+  return themes.find(({ mode }) => mode === activeTheme) ?? defaultTheme;
 }
