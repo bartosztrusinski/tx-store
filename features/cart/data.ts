@@ -57,6 +57,7 @@ export async function getCartItems<T extends Prisma.CartItemSelect>(
   }
 
   return await dbClient.cartItem.findMany({
+    orderBy: { createdAt: 'asc' },
     select,
     where: { cart: cartIdentifier },
   });
