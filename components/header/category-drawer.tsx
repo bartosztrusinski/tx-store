@@ -1,5 +1,4 @@
-import { Menu } from 'lucide-react';
-import { type CSSProperties } from 'react';
+import { type CSSProperties, type ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -13,15 +12,10 @@ import {
   DrawerTrigger,
 } from '@/components/ui/drawer';
 
-export function CategoryDrawer() {
+export function CategoryDrawer({ children }: { children: ReactNode }) {
   return (
     <Drawer direction='left'>
-      <DrawerTrigger asChild>
-        <Button size='icon' variant='outline'>
-          <Menu />
-          <span className='sr-only'>Open categories</span>
-        </Button>
-      </DrawerTrigger>
+      {children}
       <DrawerContent
         className='inset-2 m-0 max-w-80 rounded-lg px-4 after:hidden'
         handleDirection='right'
@@ -45,4 +39,8 @@ export function CategoryDrawer() {
       </DrawerContent>
     </Drawer>
   );
+}
+
+export function CategoryDrawerTrigger(props: React.ComponentProps<typeof DrawerTrigger>) {
+  return <DrawerTrigger {...props} />;
 }
