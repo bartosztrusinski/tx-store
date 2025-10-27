@@ -1,6 +1,6 @@
-import { ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { type ComponentProps, type CSSProperties, type ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -16,14 +16,17 @@ import { ProductPrice } from '@/features/product/components/product-price';
 
 import { getCartItems } from '../data';
 
-export async function CartDrawer() {
+export async function CartDrawer({
+  children,
+}: {
+  children: ReactNode | ((hasItems: boolean, totalQuantity: number) => ReactNode);
+}) {
   const cartItems = await getCartItems({
     createdAt: true,
     id: true,
     product: { select: { images: true, name: true, price: true, slug: true } },
     quantity: true,
   });
-  const sortedCartItems = cartItems?.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   const hasItems = Array.isArray(cartItems) && cartItems.length > 0;
   const cartTotal = cartItems?.reduce(
     (total, item) => ({
@@ -35,19 +38,10 @@ export async function CartDrawer() {
 
   return (
     <Drawer direction='right'>
-      <DrawerTrigger asChild>
-        <Button className='relative w-full' variant='ghost'>
-          <ShoppingCart />
-          {hasItems && (
-            <span className='absolute right-1 top-1 w-4 rounded-md bg-primary text-xs font-medium text-primary-foreground'>
-              {cartTotal.quantity}
-            </span>
-          )}
-        </Button>
-      </DrawerTrigger>
+      {typeof children === 'function' ? children(hasItems, cartTotal.quantity) : children}
       <DrawerContent
         className='inset-y-2 left-auto right-2 m-0 ml-2 min-w-64 max-w-80 rounded-lg after:hidden'
-        style={{ '--initial-transform': 'calc(100% + 0.5rem)' } as React.CSSProperties}
+        style={{ '--initial-transform': 'calc(100% + 0.5rem)' } as CSSProperties}
       >
         <DrawerHeader>
           <DrawerTitle className='flex items-center justify-between gap-3'>
@@ -67,7 +61,7 @@ export async function CartDrawer() {
         {hasItems ?
           <>
             <ul className='overflow-y-auto'>
-              {sortedCartItems?.map((item) => (
+              {cartItems.map((item) => (
                 <li key={item.id}>
                   <DrawerClose asChild>
                     <Link
@@ -117,4 +111,8 @@ export async function CartDrawer() {
       </DrawerContent>
     </Drawer>
   );
+}
+
+export function CartDrawerTrigger(props: ComponentProps<typeof DrawerTrigger>) {
+  return <DrawerTrigger {...props} />;
 }
