@@ -1,4 +1,4 @@
-import { type CSSProperties, type ReactNode } from 'react';
+import { type ComponentProps, type CSSProperties, type ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -41,6 +41,6 @@ export function CategoryDrawer({ children }: { children: ReactNode }) {
   );
 }
 
-export function CategoryDrawerTrigger(props: React.ComponentProps<typeof DrawerTrigger>) {
+export function CategoryDrawerTrigger(props: ComponentProps<typeof DrawerTrigger>) {
   return <DrawerTrigger {...props} />;
 }

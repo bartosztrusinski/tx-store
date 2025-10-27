@@ -15,7 +15,7 @@ import {
 import { logOut } from '@/features/auth/actions';
 import { getCurrentUser } from '@/lib/auth';
 
-export async function UserAvatar(props: ComponentProps<typeof Avatar>) {
+export async function AccountAvatar(props: ComponentProps<typeof Avatar>) {
   const user = await getCurrentUser();
 
   return (
@@ -33,7 +33,7 @@ export async function UserAvatar(props: ComponentProps<typeof Avatar>) {
   );
 }
 
-export async function UserMenu({ children }: { children: ReactNode }) {
+export async function AccountDropdown({ children }: { children: ReactNode }) {
   const user = await getCurrentUser();
 
   return (
@@ -92,6 +92,6 @@ export async function UserMenu({ children }: { children: ReactNode }) {
   );
 }
 
-export function UserMenuTrigger(props: ComponentProps<typeof DropdownMenuTrigger>) {
+export function AccountDropdownTrigger(props: ComponentProps<typeof DropdownMenuTrigger>) {
   return <DropdownMenuTrigger {...props} />;
 }

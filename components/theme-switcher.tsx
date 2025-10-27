@@ -46,7 +46,7 @@ export function ThemeSwitcher({ children }: { children: ReactNode }) {
   }, []);
 
   if (!isMounted) {
-    return <div className='size-10'></div>;
+    return null;
   }
 
   return (
