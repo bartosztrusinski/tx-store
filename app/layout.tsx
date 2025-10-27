@@ -1,4 +1,5 @@
 import { type Metadata } from 'next';
+import { ThemeProvider } from 'next-themes';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { type ReactNode } from 'react';
 
@@ -32,7 +33,16 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       lang='en'
       suppressHydrationWarning
     >
-      <body>{children}</body>
+      <body>
+        <ThemeProvider
+          attribute='class'
+          defaultTheme='system'
+          disableTransitionOnChange
+          enableSystem
+        >
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
