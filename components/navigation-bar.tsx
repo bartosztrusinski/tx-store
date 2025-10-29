@@ -45,7 +45,7 @@ const navItems: NavigationItem[] = [
           <CartDrawerTrigger className={`relative ${className}`}>
             {children}
             {hasItems && (
-              <span className='absolute -top-0.5 left-[55%] min-w-3 rounded-sm bg-primary px-px font-normal text-primary-foreground'>
+              <span className='absolute -top-0.5 left-1/2 ml-1 min-w-3 rounded-sm bg-primary px-px font-normal text-primary-foreground'>
                 {totalQuantity > 99 ? '99+' : totalQuantity}
               </span>
             )}

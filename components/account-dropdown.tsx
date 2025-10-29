@@ -26,7 +26,7 @@ export async function AccountAvatar(props: ComponentProps<typeof Avatar>) {
           <AvatarFallback>{user.name[0]?.toUpperCase()}</AvatarFallback>
         </>
       : <AvatarFallback className='bg-inherit'>
-          <User />
+          <User className='size-full' />
         </AvatarFallback>
       }
     </Avatar>
@@ -82,7 +82,7 @@ export async function AccountDropdown({ children }: { children: ReactNode }) {
             <DropdownMenuItem asChild>
               <Link href='/register'>
                 <UserPlus />
-                Register
+                Sign Up
               </Link>
             </DropdownMenuItem>
           </>

@@ -44,7 +44,7 @@ export async function CartDrawer({
         style={{ '--initial-transform': 'calc(100% + 0.5rem)' } as CSSProperties}
       >
         <DrawerHeader>
-          <DrawerTitle className='flex items-center justify-between gap-3'>
+          <DrawerTitle className='flex-between gap-3'>
             <span>
               My cart{' '}
               {hasItems && (
@@ -65,7 +65,7 @@ export async function CartDrawer({
                 <li key={item.id}>
                   <DrawerClose asChild>
                     <Link
-                      className='flex cursor-pointer items-center gap-3 px-3 py-2'
+                      className='flex-center cursor-pointer gap-3 px-3 py-2'
                       href={`/products/${item.product.slug}`}
                     >
                       {item.product.images[0] && (
