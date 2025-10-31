@@ -1,12 +1,14 @@
 'use client';
 
 import { type CartItem, type Product } from '@prisma/client';
+import { Minus, Plus } from 'lucide-react';
 import { startTransition, useOptimistic } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useInputStepper } from '@/lib/hooks/use-input-stepper';
 
 import { setCartItemQuantity } from '../actions';
-import { QuantityStepper } from './quantity-stepper';
 
 type Props = {
   initialQuantity: CartItem['quantity'];
@@ -19,29 +21,42 @@ export function AddToCartControl({ initialQuantity, productSlug, stock }: Props)
     initialQuantity,
     (_, newQuantity) => newQuantity,
   );
+  const { decrementButtonProps, incrementButtonProps, inputProps } = useInputStepper({
+    max: stock,
+    onChange: handleCartUpdate,
+    value: optimisticQuantity,
+  });
 
-  const handleCartUpdate = async (quantity: number) => {
+  async function handleCartUpdate(quantity: number) {
     startTransition(async () => {
       setOptimisticQuantity(quantity);
       await setCartItemQuantity(quantity, productSlug);
     });
-  };
+  }
 
   if (optimisticQuantity === 0) {
     return (
-      <Button className='w-full' disabled={stock === 0} onClick={() => handleCartUpdate(1)}>
-        {stock === 0 ? 'Out of Stock' : 'Add to Bag'}
+      <Button
+        className='w-full'
+        disabled={stock === 0}
+        onClick={() => handleCartUpdate(optimisticQuantity + 1)}
+      >
+        {stock === 0 ? 'Out of Stock' : 'Add to Cart'}
       </Button>
     );
   }
 
   return (
-    <QuantityStepper
-      max={stock}
-      onChange={(value) => handleCartUpdate(value)}
-      onDecrement={() => handleCartUpdate(optimisticQuantity - 1)}
-      onIncrement={() => handleCartUpdate(optimisticQuantity + 1)}
-      quantity={optimisticQuantity}
-    />
+    <div className='flex-center gap-2'>
+      <Button {...decrementButtonProps}>
+        <Minus />
+        <span className='sr-only'>Decrease quantity by one</span>
+      </Button>
+      <Input aria-label='Quantity' className='text-center' {...inputProps} />
+      <Button {...incrementButtonProps}>
+        <Plus />
+        <span className='sr-only'>Increase quantity by one</span>
+      </Button>
+    </div>
   );
 }
