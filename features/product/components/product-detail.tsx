@@ -34,23 +34,21 @@ export function ProductDetail({ product }: Props) {
             <h1 className='heading-1 font-semibold'>{product.name}</h1>
             <p className='text-lg text-muted-foreground'>{product.category}</p>
           </div>
-          <ProductPrice price={product.price.toNumber()} size='lg' />
+          <ProductPrice price={product.price.toNumber()} />
           <p>{product.description}</p>
         </div>
-        <Card className='p-3 lg:w-52 lg:shrink-0 lg:self-start'>
+        <Card className='p-4'>
           <div className='flex-between gap-2'>
             <span>Price</span>
-            <ProductPrice price={product.price.toNumber()} size='sm' />
+            <ProductPrice price={product.price.toNumber()} />
           </div>
-          <div className='flex-between mt-2 gap-2'>
+          <div className='flex-between mb-4 mt-2 gap-2'>
             <span>Stock</span>
             <span className={`${isLowStock || !isInStock ? 'text-red-600' : ''}`}>
               {isInStock ? product.stock : 'Out of stock'}
             </span>
           </div>
-          <div className='mt-4'>
-            <AddToCartWrapper productSlug={product.slug} productStock={product.stock} />
-          </div>
+          <AddToCartWrapper productSlug={product.slug} productStock={product.stock} />
         </Card>
       </section>
     </article>
