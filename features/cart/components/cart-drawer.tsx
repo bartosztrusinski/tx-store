@@ -12,6 +12,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer';
+import { CartItemQuantityStepper } from '@/features/cart/components/cart-item-quantity-stepper';
 import { ProductPrice } from '@/features/product/components/product-price';
 
 import { getCartItems } from '../data';
@@ -24,7 +25,7 @@ export async function CartDrawer({
   const cartItems = await getCartItems({
     createdAt: true,
     id: true,
-    product: { select: { images: true, name: true, price: true, slug: true } },
+    product: { select: { images: true, name: true, price: true, slug: true, stock: true } },
     quantity: true,
   });
   const hasItems = Array.isArray(cartItems) && cartItems.length > 0;
@@ -52,8 +53,8 @@ export async function CartDrawer({
               )}
             </span>
             {hasItems && (
-              <span>
-                Total: <ProductPrice price={cartTotal.price} size='sm' />
+              <span className='text-base'>
+                Total: <ProductPrice price={cartTotal.price} />
               </span>
             )}
           </DrawerTitle>
@@ -62,35 +63,37 @@ export async function CartDrawer({
           <>
             <ul className='overflow-y-auto'>
               {cartItems.map((item) => (
-                <li key={item.id}>
-                  <DrawerClose asChild>
-                    <Link
-                      className='flex-center cursor-pointer gap-3 px-3 py-2'
-                      href={`/products/${item.product.slug}`}
-                    >
+                <li className='flex flex-col gap-1 p-3' key={item.id}>
+                  <DrawerClose asChild className='flex gap-2'>
+                    <Link href={`/products/${item.product.slug}`}>
                       {item.product.images[0] && (
                         <Image
                           alt={item.product.name}
-                          className='grow-0 rounded-sm'
-                          height={56}
+                          className='rounded-sm'
+                          height={76}
                           src={item.product.images[0]}
-                          width={56}
+                          width={76}
                         />
                       )}
-                      <div className='grow'>
-                        <p>{item.product.name}</p>
-                        <div className='flex justify-between'>
-                          <span className='text-sm text-muted-foreground'>
-                            Quantity: {item.quantity}
-                          </span>
-                          <ProductPrice
-                            price={Number(item.product.price) * item.quantity}
-                            size='sm'
-                          />
-                        </div>
-                      </div>
+                      <p>{item.product.name}</p>
                     </Link>
                   </DrawerClose>
+                  <div className='flex-between gap-3'>
+                    <CartItemQuantityStepper
+                      buttonClassName='size-8'
+                      inputClassName='h-8 w-14 p-1 text-center'
+                      productSlug={item.product.slug}
+                      quantity={item.quantity}
+                      showInitialCta={false}
+                      stock={item.product.stock}
+                    />
+                    <div className='font-semibold'>
+                      <ProductPrice price={Number(item.product.price) * item.quantity} />
+                      <div className='text-sm text-muted-foreground'>
+                        <ProductPrice price={Number(item.product.price)} /> each
+                      </div>
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>

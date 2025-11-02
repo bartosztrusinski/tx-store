@@ -1,7 +1,8 @@
 import { type Product } from '@prisma/client';
 
+import { CartItemQuantityStepper } from '@/features/cart/components/cart-item-quantity-stepper';
+
 import { getCartItem } from '../data';
-import { AddToCartControl } from './add-to-cart-control';
 
 type Props = {
   productSlug: Product['slug'];
@@ -12,9 +13,9 @@ export async function AddToCartWrapper({ productSlug, productStock }: Props) {
   const cartItem = await getCartItem(productSlug, { quantity: true });
 
   return (
-    <AddToCartControl
-      initialQuantity={cartItem?.quantity ?? 0}
+    <CartItemQuantityStepper
       productSlug={productSlug}
+      quantity={cartItem?.quantity ?? 0}
       stock={productStock}
     />
   );
