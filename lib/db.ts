@@ -1,7 +1,8 @@
 import 'server-only';
 import { neonConfig } from '@neondatabase/serverless';
-import { PrismaNeon, PrismaNeonHTTP } from '@prisma/adapter-neon';
-import { type Prisma, PrismaClient } from '@prisma/client';
+import { PrismaNeon, PrismaNeonHttp } from '@prisma/adapter-neon';
+
+import { type Prisma, PrismaClient } from '@/lib/generated/prisma/client';
 
 type DbClient = Prisma.TransactionClient | PrismaClient;
 
@@ -14,7 +15,7 @@ const globalForPrisma = globalThis as unknown as {
 
 const connectionString = `${process.env.DB_URL}`;
 
-const adapterHttp = new PrismaNeonHTTP(connectionString, {});
+const adapterHttp = new PrismaNeonHttp(connectionString, {});
 const adapterWs = new PrismaNeon({ connectionString });
 
 const db = globalForPrisma.db ?? new PrismaClient({ adapter: adapterHttp });

@@ -1,31 +1,39 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaNeon } from '@prisma/adapter-neon';
+import { betterAuth } from 'better-auth';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
 
 import { users } from '@/features/auth/seed';
 import { products } from '@/features/product/seed';
-import { auth } from '@/lib/auth';
+import { PrismaClient } from '@/lib/generated/prisma/client';
 
-seed();
+const adapter = new PrismaNeon({ connectionString: process.env.DB_URL });
+const db = new PrismaClient({ adapter });
 
-async function clearDatabase(prisma: PrismaClient) {
-  await prisma.user.deleteMany();
-  await prisma.account.deleteMany();
-  await prisma.session.deleteMany();
-  await prisma.verification.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.cart.deleteMany();
-  await prisma.cartItem.deleteMany();
+const auth = betterAuth({
+  database: prismaAdapter(db, { provider: 'postgresql' }),
+  emailAndPassword: { enabled: true },
+});
+
+await seed();
+
+async function resetDatabase() {
+  await db.user.deleteMany();
+  await db.account.deleteMany();
+  await db.session.deleteMany();
+  await db.verification.deleteMany();
+  await db.product.deleteMany();
+  await db.cart.deleteMany();
+  await db.cartItem.deleteMany();
 }
 
 async function seed() {
-  const prisma = new PrismaClient();
-
   try {
-    await clearDatabase(prisma);
-    await prisma.product.createMany({ data: products });
+    await resetDatabase();
+    await db.product.createMany({ data: products });
     await Promise.all(users.map((user) => auth.api.signUpEmail({ body: user })));
   } catch (error) {
     console.error(error);
   } finally {
-    await prisma.$disconnect();
+    await db.$disconnect();
   }
 }
