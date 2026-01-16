@@ -1,7 +1,6 @@
-import { type Product } from '@prisma/client';
-
 import { Card } from '@/components/ui/card';
 import { AddToCartWrapper } from '@/features/cart/components/add-to-cart-wrapper';
+import { type Product } from '@/lib/generated/prisma/client';
 
 import { ProductImageGallery } from './product-image-gallery';
 import { ProductPrice } from './product-price';

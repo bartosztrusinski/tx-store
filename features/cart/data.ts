@@ -1,10 +1,10 @@
 import 'server-only';
-import { type Cart, Prisma, type Product } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 
 import { getCurrentUser } from '@/lib/auth';
 import { requireAuth } from '@/lib/dal';
 import { db, type DbClient, dbPool, dbTransaction } from '@/lib/db';
+import { type Cart, Prisma, type Product } from '@/lib/generated/prisma/client';
 import { mergeArraysByKey } from '@/lib/utils/merge-arrays-by-key';
 
 import { deleteGuestCartCookie, getGuestCartCookie, setGuestCartCookie } from './cookie';

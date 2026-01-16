@@ -1,6 +1,5 @@
-import { type Product } from '@prisma/client';
-
 import { CartItemQuantityStepper } from '@/features/cart/components/cart-item-quantity-stepper';
+import { type Product } from '@/lib/generated/prisma/client';
 
 import { getCartItem } from '../data';
 

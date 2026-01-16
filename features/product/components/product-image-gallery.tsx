@@ -1,6 +1,5 @@
 'use client';
 
-import { type Product } from '@prisma/client';
 import { WheelGesturesPlugin } from 'embla-carousel-wheel-gestures';
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
@@ -14,6 +13,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+import { type Product } from '@/lib/generated/prisma/client';
 import { cn } from '@/lib/utils/cn';
 
 type Props = {

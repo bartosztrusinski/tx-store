@@ -1,10 +1,10 @@
-import { type Prisma } from '@prisma/client';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ProductPrice } from '@/features/product/components/product-price';
+import { type Prisma } from '@/lib/generated/prisma/client';
 
 import { CartItemQuantityStepper } from './cart-item-quantity-stepper';
 
@@ -26,7 +26,7 @@ type Props = {
   }>[];
 };
 
-export async function CartItemList({ cartItems }: Props) {
+export function CartItemList({ cartItems }: Props) {
   const hasItems = cartItems.length > 0;
 
   return hasItems ?

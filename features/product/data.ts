@@ -1,8 +1,8 @@
 import 'server-only';
-import { type Prisma, type Product } from '@prisma/client';
 
 import { LATEST_PRODUCTS_LIMIT } from '@/lib/constants';
 import { db, type DbClient } from '@/lib/db';
+import { type Prisma, type Product } from '@/lib/generated/prisma/client';
 
 type Select = Prisma.ProductSelect;
 

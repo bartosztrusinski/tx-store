@@ -1,12 +1,12 @@
 'use client';
 
-import { type CartItem, type Product } from '@prisma/client';
 import { Minus, Plus } from 'lucide-react';
 import { startTransition, useOptimistic } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { setCartItemQuantity } from '@/features/cart/actions';
+import { type CartItem, type Product } from '@/lib/generated/prisma/client';
 import { useInputStepper } from '@/lib/hooks/use-input-stepper';
 import { cn } from '@/lib/utils/cn';
 

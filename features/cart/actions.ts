@@ -1,11 +1,11 @@
 'use server';
 
-import { type CartItem, type Product } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
 import { getProductBySlug } from '@/features/product/data';
 import { DalError, isUnauthenticated } from '@/lib/dal';
 import { dbTransaction } from '@/lib/db';
+import { type CartItem, type Product } from '@/lib/generated/prisma/client';
 import { type ActionResponse } from '@/lib/types';
 import { splitByKeys } from '@/lib/utils/split-by-keys';
 import { tryCatch } from '@/lib/utils/try-catch';
