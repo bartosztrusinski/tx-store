@@ -23,7 +23,6 @@ export async function CartDrawer({
   children: ReactNode | ((hasItems: boolean, totalQuantity: number) => ReactNode);
 }) {
   const cartItems = await getCartItems({
-    createdAt: true,
     id: true,
     product: { select: { images: true, name: true, price: true, slug: true, stock: true } },
     quantity: true,
@@ -81,7 +80,7 @@ export async function CartDrawer({
                   <div className='flex-between gap-3'>
                     <CartItemQuantityStepper
                       buttonClassName='size-8'
-                      inputClassName='h-8 w-14 p-1 text-center'
+                      inputClassName='h-8 w-14 p-1'
                       productSlug={item.product.slug}
                       quantity={item.quantity}
                       showInitialCta={false}
@@ -102,7 +101,7 @@ export async function CartDrawer({
                 <Button asChild>
                   <Link
                     className='w-full cursor-pointer focus:bg-primary focus:text-primary-foreground focus-visible:hover:ring-0'
-                    href='/'
+                    href='/cart'
                   >
                     View Cart
                   </Link>

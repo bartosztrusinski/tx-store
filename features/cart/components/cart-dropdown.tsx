@@ -53,7 +53,7 @@ export async function CartDropdown() {
           </span>
           {hasItems && (
             <span>
-              Total: <ProductPrice price={cartTotal.price} size='sm' />
+              Total: <ProductPrice price={cartTotal.price} />
             </span>
           )}
         </DropdownMenuLabel>
@@ -83,10 +83,7 @@ export async function CartDropdown() {
                         <span className='text-sm text-muted-foreground'>
                           Quantity: {item.quantity}
                         </span>
-                        <ProductPrice
-                          price={Number(item.product.price) * item.quantity}
-                          size='sm'
-                        />
+                        <ProductPrice price={Number(item.product.price) * item.quantity} />
                       </div>
                     </div>
                   </Link>
