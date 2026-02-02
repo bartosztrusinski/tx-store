@@ -14,9 +14,148 @@ import {
   deleteCartItem,
   getOrCreateCurrentUserCart,
   getOrCreateGuestCart,
+  updateCartItems,
   upsertCartItem,
 } from './data';
-import { setCartItemQuantitySchema } from './schemas';
+import { selectCartItemSchema, setCartItemQuantitySchema } from './schemas';
+
+export async function deselectCartItem(
+  productSlug: Product['slug'],
+): Promise<ActionResponse<typeof selectCartItemSchema>> {
+  const [result, error] = await tryCatch(
+    async (): Promise<ActionResponse<typeof selectCartItemSchema>> => {
+      const validationResult = selectCartItemSchema.safeParse({ productSlug });
+
+      if (!validationResult.success) {
+        const { fieldErrors } = validationResult.error.flatten();
+        const [systemErrors, userErrors] = splitByKeys(fieldErrors, ['productSlug']);
+        const isSystemError = Object.values(systemErrors).some((errs) => Array.isArray(errs));
+
+        if (isSystemError) {
+          throw new Error(
+            `Input validation error: ${Object.values(systemErrors).flat().join(' ')}`,
+          );
+        }
+
+        return {
+          isSuccess: false,
+          validationErrors: userErrors,
+        };
+      }
+
+      const [userCartId, error] = await tryCatch(getOrCreateCurrentUserCart);
+      const cartId = userCartId ?? (isUnauthenticated(error) ? await getOrCreateGuestCart() : null);
+
+      if (!cartId) {
+        throw new Error('Could not find or create user cart.', { cause: error });
+      }
+
+      return await dbTransaction(
+        async (tx): Promise<ActionResponse<typeof setCartItemQuantitySchema>> => {
+          const updatedItemCount = await updateCartItems(
+            { cartId, isSelected: true, product: { slug: productSlug } },
+            { isSelected: false },
+            tx,
+          );
+          if (updatedItemCount === 0) {
+            return {
+              isSuccess: false,
+              message: 'Could not find that cart item. Please try again.',
+            };
+          }
+          return { isSuccess: true, message: 'Cart item deselected successfully.' };
+        },
+      );
+    },
+  );
+
+  if (error) {
+    console.error(error);
+
+    return {
+      isSuccess: false,
+      message:
+        error instanceof DalError ?
+          error.message
+        : 'Could not update your cart. Please try again in a moment.',
+    };
+  }
+
+  if (result.isSuccess) {
+    revalidatePath('/cart');
+  }
+
+  return result;
+}
+
+export async function selectCartItem(
+  productSlug: Product['slug'],
+): Promise<ActionResponse<typeof selectCartItemSchema>> {
+  const [result, error] = await tryCatch(
+    async (): Promise<ActionResponse<typeof selectCartItemSchema>> => {
+      const validationResult = selectCartItemSchema.safeParse({ productSlug });
+
+      if (!validationResult.success) {
+        const { fieldErrors } = validationResult.error.flatten();
+        const [systemErrors, userErrors] = splitByKeys(fieldErrors, ['productSlug']);
+        const isSystemError = Object.values(systemErrors).some((errs) => Array.isArray(errs));
+
+        if (isSystemError) {
+          throw new Error(
+            `Input validation error: ${Object.values(systemErrors).flat().join(' ')}`,
+          );
+        }
+
+        return {
+          isSuccess: false,
+          validationErrors: userErrors,
+        };
+      }
+
+      const [userCartId, error] = await tryCatch(getOrCreateCurrentUserCart);
+      const cartId = userCartId ?? (isUnauthenticated(error) ? await getOrCreateGuestCart() : null);
+
+      if (!cartId) {
+        throw new Error('Could not find or create user cart.', { cause: error });
+      }
+
+      return await dbTransaction(
+        async (tx): Promise<ActionResponse<typeof setCartItemQuantitySchema>> => {
+          const updatedItemCount = await updateCartItems(
+            { cartId, isSelected: false, product: { slug: productSlug } },
+            { isSelected: true },
+            tx,
+          );
+          if (updatedItemCount === 0) {
+            return {
+              isSuccess: false,
+              message: 'Could not find that cart item. Please try again.',
+            };
+          }
+          return { isSuccess: true, message: 'Cart item selected successfully.' };
+        },
+      );
+    },
+  );
+
+  if (error) {
+    console.error(error);
+
+    return {
+      isSuccess: false,
+      message:
+        error instanceof DalError ?
+          error.message
+        : 'Could not update your cart. Please try again in a moment.',
+    };
+  }
+
+  if (result.isSuccess) {
+    revalidatePath('/cart');
+  }
+
+  return result;
+}
 
 export async function setCartItemQuantity(
   quantity: CartItem['quantity'],

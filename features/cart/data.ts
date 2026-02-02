@@ -158,6 +158,18 @@ export async function mergeUserAndGuestCarts(userId: NonNullable<Cart['userId']>
   });
 }
 
+export async function updateCartItems(
+  where: Prisma.CartItemWhereInput,
+  data: Prisma.CartItemUpdateInput,
+  dbClient: DbClient = db,
+) {
+  const result = await dbClient.cartItem.updateMany({
+    data,
+    where,
+  });
+  return result.count;
+}
+
 export async function upsertCartItem(
   { cartId, productId, ...item }: Prisma.CartItemCreateManyInput,
   dbClient: DbClient = db,
